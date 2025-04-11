@@ -18,8 +18,27 @@
       padding: 1rem;
       text-align: center;
     }
+    nav {
+      background-color: #388e3c;
+      display: flex;
+      justify-content: center;
+      padding: 0.5rem;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin: 0 1rem;
+      font-weight: bold;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
     section {
       padding: 2rem;
+      display: none;
+    }
+    section.active {
+      display: block;
     }
     h1, h2 {
       margin-bottom: 1rem;
@@ -38,12 +57,25 @@
     <h1>EcoHelm</h1>
     <p>Our priority is not you, it's the helmet.</p>
   </header>
-  <section>
+
+  <nav>
+    <a href="#" onclick="showSection('about')">About</a>
+    <a href="#" onclick="showSection('ingredients')">Ingredients</a>
+    <a href="#" onclick="showSection('helmet')">Helmet Info</a>
+    <a href="#" onclick="showSection('materials')">Materials</a>
+    <a href="#" onclick="showSection('impact')">Impact</a>
+    <a href="#" onclick="showSection('why')">Why Us</a>
+    <a href="#" onclick="showSection('creators')">Creators</a>
+  </nav>
+
+  <section id="about" class="active">
     <div class="card">
       <h2>About It</h2>
       <p>EcoHelm is a helmet made using only natural materials that are better for the environment. It’s strong, safe, and made to protect your head while also protecting the Earth. We care about how things are made and what happens to them after you’re done using them. That’s why EcoHelm is designed to be reusable, compostable, and cool-looking too!</p>
     </div>
+  </section>
 
+  <section id="ingredients">
     <div class="card">
       <h2>Ingredients</h2>
       <ul>
@@ -53,12 +85,16 @@
         <li><strong>Plant-Based Resin:</strong> A glue-like material made from plants to hold the helmet together.</li>
       </ul>
     </div>
+  </section>
 
+  <section id="helmet">
     <div class="card">
       <h2>About the Helmet</h2>
       <p>EcoHelm is an all-natural helmet made of bamboo fiber shells, cork foam padding, organic cotton lining, and resin derived from plants (and plastic – just kidding!). It’s designed to keep you safe and help save the planet at the same time.</p>
     </div>
+  </section>
 
+  <section id="materials">
     <div class="card">
       <h2>Natural Materials Used</h2>
       <ul>
@@ -68,12 +104,16 @@
         <li><strong>Plant-Based Resin:</strong> Used to hold parts together.</li>
       </ul>
     </div>
+  </section>
 
+  <section id="impact">
     <div class="card">
       <h2>Environmental Impact</h2>
       <p>All materials are grown or harvested. The helmet is compostable and is manufactured in low-pollution facilities using renewable energy sources where possible.</p>
     </div>
+  </section>
 
+  <section id="why">
     <div class="card">
       <h2>Why Choose EcoHelm?</h2>
       <ul>
@@ -83,7 +123,9 @@
         <li>Made from 100% renewable materials.</li>
       </ul>
     </div>
+  </section>
 
+  <section id="creators">
     <div class="card">
       <h2>Creators</h2>
       <p>This project was made by:</p>
@@ -93,5 +135,13 @@
       </ul>
     </div>
   </section>
+
+  <script>
+    function showSection(id) {
+      const sections = document.querySelectorAll('section');
+      sections.forEach(section => section.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+  </script>
 </body>
 </html>
