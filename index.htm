@@ -11,52 +11,80 @@
       color: #333;
       margin: 0;
       padding: 0;
+      scroll-behavior: smooth;
     }
     header {
       background: linear-gradient(135deg, #2e7d32, #66bb6a);
       color: white;
-      padding: 1.5rem;
+      padding: 2rem 1rem;
       text-align: center;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     }
     nav {
       background-color: #1b5e20;
       display: flex;
+      flex-wrap: wrap;
       justify-content: center;
-      gap: 1rem;
-      padding: 0.75rem 0;
+      gap: 0.75rem;
+      padding: 0.75rem 0.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
     nav a {
       color: white;
       text-decoration: none;
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
-      transition: background-color 0.3s ease;
+      padding: 0.6rem 1.2rem;
+      border-radius: 25px;
+      background-color: #2e7d32;
+      font-weight: bold;
+      transition: all 0.3s ease;
     }
     nav a:hover {
       background-color: #43a047;
+      transform: scale(1.05);
     }
     section {
       padding: 2rem;
       display: none;
+      animation: fadeIn 0.5s ease-in-out;
     }
     section.active {
       display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
     h1, h2 {
       margin-bottom: 1rem;
     }
     .card {
       background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
       padding: 1.5rem;
       margin-bottom: 2rem;
-      transition: transform 0.2s ease;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
     .card:hover {
       transform: translateY(-5px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+    }
+    ul {
+      padding-left: 1.25rem;
+    }
+    ul li {
+      margin-bottom: 0.5rem;
+    }
+    footer {
+      background-color: #1b5e20;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.9rem;
+      margin-top: 2rem;
     }
   </style>
 </head>
@@ -88,8 +116,8 @@
       <ul>
         <li><strong>Bamboo Fiber Shell:</strong> A tough and durable outer shell made from bamboo plants.</li>
         <li><strong>Cork Foam Padding:</strong> A soft and spongy material that absorbs impact and is 100% natural.</li>
-        <li><strong>Organic Cotton Lining:</strong> Very spacy and comforatble lining.</li>
-        <li><strong>Plant Based Resin:</strong> A sitcky substance made from plants to hold the helmet together.</li>
+        <li><strong>Organic Cotton Lining:</strong> Very spacey and comfortable lining.</li>
+        <li><strong>Plant Based Resin:</strong> A sticky substance made from plants to hold the helmet together.</li>
       </ul>
     </div>
   </section>
@@ -113,7 +141,6 @@
     </div>
   </section>
 
-
   <section id="why">
     <div class="card">
       <h2>Why Choose EcoHelm?</h2>
@@ -136,6 +163,10 @@
       </ul>
     </div>
   </section>
+
+  <footer>
+    &copy; STEM PROJECT
+  </footer>
 
   <script>
     function showSection(id) {
