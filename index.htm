@@ -109,6 +109,28 @@
     .button:hover {
       background-color: #388e3c;
     }
+    .tooltip {
+      display: inline-block;
+      position: relative;
+      cursor: help;
+    }
+    .tooltip:hover::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      background: #333;
+      color: #fff;
+      padding: 6px 8px;
+      border-radius: 8px;
+      top: -35px;
+      white-space: nowrap;
+      font-size: 0.85rem;
+    }
+    .section-divider {
+      text-align: center;
+      margin-top: 3rem;
+      font-size: 1.25rem;
+      color: #2e7d32;
+    }
   </style>
 </head>
 <body>
@@ -132,7 +154,7 @@
       <p> After looking at a bunch of materials and how helmets are usually made, this is a design of an all-natural helmet.</p>
       <p> Materials like bamboo and cork were used because they’re strong, renewable, and way better for the environment than plastic.</p>
       <p>The idea was to use things people don’t always think about when it comes to safety gear. It took a lot of researching, comparing materials, and figuring out how everything could fit together in a helmet that actually looks good too.</p>
-      <div class="fun-fact">🌱 <em>Fun Fact: Cork is actually a tree! It’s harvested from the bark of cork oak trees without cutting them down.</em></div>
+      <div class="fun-fact">🌱 <em>Fun Fact: Cork isn't just for bulletin boards. It naturally resists fire, mold, and water, making it perfect for helmet padding.</em></div>
     </div>
   </section>
 
@@ -160,10 +182,10 @@
     <div class="card">
       <h2>Why Choose Eco Guard?</h2>
       <ul>
-        <li>NO plastic</li>
-        <li>Built for safety.</li>
-        <li>Fully recyclable and compostable.</li>
-        <li>Made from 100% renewable materials.</li>
+        <li class="tooltip" data-tooltip="No harmful materials that pollute the Earth">NO plastic</li>
+        <li class="tooltip" data-tooltip="Made to protect your head from impact">Built for safety.</li>
+        <li class="tooltip" data-tooltip="Can be safely composted or recycled">Fully recyclable and compostable.</li>
+        <li class="tooltip" data-tooltip="All materials grow back or renew over time">Made from 100% renewable materials.</li>
       </ul>
     </div>
   </section>
