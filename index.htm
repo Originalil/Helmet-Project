@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -85,12 +85,37 @@
       border-radius: 12px;
       margin-top: 1rem;
     }
+    .tab-indicator {
+      width: 100%;
+      height: 5px;
+      background: linear-gradient(to right, #66bb6a, #2e7d32);
+      margin-top: -5px;
+      animation: move 2s linear infinite;
+    }
+    @keyframes move {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 100% 50%; }
+    }
+    .button {
+      background-color: #66bb6a;
+      color: white;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .button:hover {
+      background-color: #388e3c;
+    }
   </style>
 </head>
 <body>
   <header>
     <h1>Eco Guard</h1>
     <p>Our priority is not you, it's the helmet.</p>
+    <div class="tab-indicator"></div>
   </header>
 
   <nav>
@@ -105,9 +130,9 @@
     <div class="card">
       <h2>About It</h2>
       <p> After looking at a bunch of materials and how helmets are usually made, this is a design of an all-natural helmet.</p>
-      <p> materials like bamboo and cork were used because they’re strong, renewable, and way better for the environment than plastic..</p>
+      <p> Materials like bamboo and cork were used because they’re strong, renewable, and way better for the environment than plastic.</p>
       <p>The idea was to use things people don’t always think about when it comes to safety gear. It took a lot of researching, comparing materials, and figuring out how everything could fit together in a helmet that actually looks good too.</p>
-      <div class="fun-fact">🌱 <em>Fun Fact:  Cork is actually a tree! It’s actually harvested from the bark of cork oak trees without cutting them down.</em></div>
+      <div class="fun-fact">🌱 <em>Fun Fact: Cork is actually a tree! It’s harvested from the bark of cork oak trees without cutting them down.</em></div>
     </div>
   </section>
 
@@ -127,18 +152,7 @@
     <div class="card">
       <h2>About the Helmet</h2>
       <p>Eco Guard is an all-natural helmet made of bamboo fiber shells, cork foam padding, organic cotton lining, and resin derived from plants (and plastic – just kidding). It’s designed to keep you safe and help save the planet at the same time.</p>
-    </div>
-  </section>
-
-  <section id="materials">
-    <div class="card">
-      <h2>Natural Materials Used</h2>
-      <ul>
-        <li><strong>Bamboo Fiber Shell:</strong> It’s strong, dense, and a renewable outer shell.</li>
-        <li><strong>Cork Foam Padding:</strong> Impact absorbent and biodegradable.</li>
-        <li><strong>Organic Cotton Lining:</strong> Soft and comfortable.</li>
-        <li><strong>Plant-Based Resin:</strong> Used to hold parts together.</li>
-      </ul>
+      <button class="button" onclick="alert('Eco Mode: Activated!')">Test Feature</button>
     </div>
   </section>
 
