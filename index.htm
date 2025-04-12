@@ -48,14 +48,20 @@
     section {
       padding: 2rem;
       display: none;
-      animation: fadeIn 0.5s ease-in-out;
+      animation: fadeIn 0.6s ease-in-out forwards;
+      opacity: 0;
+      transform: translateY(10px);
     }
     section.active {
       display: block;
+      opacity: 1;
+      transform: translateY(0);
     }
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
     h1, h2 {
       margin-bottom: 1rem;
@@ -96,19 +102,6 @@
       0% { background-position: 0% 50%; }
       100% { background-position: 100% 50%; }
     }
-    .button {
-      background-color: #66bb6a;
-      color: white;
-      padding: 0.5rem 1rem;
-      border: none;
-      border-radius: 10px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-    .button:hover {
-      background-color: #388e3c;
-    }
     .tooltip {
       display: inline-block;
       position: relative;
@@ -125,13 +118,11 @@
       white-space: nowrap;
       font-size: 0.85rem;
     }
-    .section-divider {
-      text-align: center;
-      margin-top: 3rem;
-      font-size: 1.25rem;
-      color: #2e7d32;
+    .icon {
+      margin-right: 0.5rem;
     }
   </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
 </head>
 <body>
   <header>
@@ -141,20 +132,18 @@
   </header>
 
   <nav>
-    <a href="#" onclick="showSection('about')">About</a>
-    <a href="#" onclick="showSection('materials')">Materials</a>
-    <a href="#" onclick="showSection('helmet')">Helmet Info</a>
-    <a href="#" onclick="showSection('why')">Why Us</a>
-    <a href="#" onclick="showSection('creators')">Creators</a>
+    <a href="#" onclick="showSection('helmet')"><i class="fas fa-hard-hat icon"></i>Helmet Info</a>
+    <a href="#" onclick="showSection('materials')"><i class="fas fa-leaf icon"></i>Materials</a>
+    <a href="#" onclick="showSection('why')"><i class="fas fa-check icon"></i>Why Us</a>
+    <a href="#" onclick="showSection('creators')"><i class="fas fa-users icon"></i>Creators</a>
   </nav>
 
-  <section id="about" class="active">
+  <section id="helmet" class="active">
     <div class="card">
-      <h2>About It</h2>
-      <p> After looking at a bunch of materials and how helmets are usually made, this is a design of an all-natural helmet.</p>
-      <p> Materials like bamboo and cork were used because they’re strong, renewable, and way better for the environment than plastic.</p>
-      <p>The idea was to use things people don’t always think about when it comes to safety gear. It took a lot of researching, comparing materials, and figuring out how everything could fit together in a helmet that actually looks good too.</p>
-      <div class="fun-fact">🌱 <em>Fun Fact: Cork isn't just for bulletin boards. It naturally resists fire, mold, and water, making it perfect for helmet padding.</em></div>
+      <h2>Helmet Info</h2>
+      <p>This isn’t just some helmet you throw on and forget. Eco Guard is made with the Earth in mind. The shell is bamboo fiber – super strong but also super renewable. Inside, you’ve got cork padding that’s lightweight and shock-absorbing. The lining? Organic cotton that’s breathable and soft, so it’s actually comfortable to wear. And to keep it all together, we use plant-based resin – no toxic glue here. </p>
+      <p>This helmet is all about balance: strength and sustainability, style and safety. It's the kind of gear you'd want to wear whether you're riding your bike or saving the planet. Every piece of it was picked to do a job *and* do it without hurting nature. So yeah, it protects your head – but also your future.</p>
+      <div class="fun-fact">🧠 <em>Fun Fact: Cork isn’t just eco-friendly – it can actually bounce back to shape after compression, making it perfect for helmet safety layers.</em></div>
     </div>
   </section>
 
@@ -167,14 +156,6 @@
         <li><strong>Organic Cotton Lining:</strong> This is the soft layer that touches your head. It’s breathable and comfy. Organic cotton is grown without chemicals and can be bought from most natural textile suppliers.</li>
         <li><strong>Plant-Based Resin:</strong> This is like natural glue. It holds all the parts of the helmet together. It’s made from stuff like pine sap or soy and can be found in some craft or industrial stores that focus on eco-products.</li>
       </ul>
-    </div>
-  </section>
-
-  <section id="helmet">
-    <div class="card">
-      <h2>About the Helmet</h2>
-      <p>Eco Guard is an all-natural helmet made of bamboo fiber shells, cork foam padding, organic cotton lining, and resin derived from plants (and plastic – just kidding). It’s designed to keep you safe and help save the planet at the same time.</p>
-      <button class="button" onclick="alert('Eco Mode: Activated!')">Test Feature</button>
     </div>
   </section>
 
@@ -210,4 +191,3 @@
   </script>
 </body>
 </html>
-
