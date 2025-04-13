@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Eco Guard</title>
+  <meta name="description" content="Eco Guard is a 100% natural, sustainable, and compostable helmet made with bamboo, cork, cotton, and plant-based resin. Learn how it protects both your head and the environment.">
+  <meta name="author" content="Ayaan Farooq, Harrison Vesey">
+  <meta name="keywords" content="eco helmet, sustainable helmet, natural materials, compostable, bamboo helmet, cork padding, green technology, helmet design">
+  <meta name="robots" content="index, follow">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -121,12 +126,40 @@
     .icon {
       margin-right: 0.5rem;
     }
+    .glow {
+      animation: glow 2s ease-in-out infinite alternate;
+    }
+    @keyframes glow {
+      from { text-shadow: 0 0 5px #a5d6a7, 0 0 10px #81c784; }
+      to { text-shadow: 0 0 20px #66bb6a, 0 0 30px #388e3c; }
+    }
+    .card i {
+      color: #4caf50;
+      margin-right: 0.5rem;
+    }
+    .alert-box {
+      position: fixed;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #81c784;
+      color: #1b5e20;
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      font-weight: bold;
+      animation: fadeInUp 1s ease forwards;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
 </head>
 <body>
   <header>
-    <h1>Eco Guard</h1>
+    <h1 class="glow">Eco Guard</h1>
     <p>Our priority is not you, it's the helmet.</p>
     <div class="tab-indicator"></div>
   </header>
@@ -140,16 +173,16 @@
 
   <section id="helmet" class="active">
     <div class="card">
-      <h2>Helmet Info</h2>
+      <h2><i class="fas fa-shield-alt"></i> Helmet Info</h2>
       <p>This isn’t just some helmet you throw on and forget. Eco Guard is made with the Earth in mind. The shell is bamboo fiber – super strong but also super renewable. Inside, you’ve got cork padding that’s lightweight and shock-absorbing. The lining? Organic cotton that’s breathable and soft, so it’s actually comfortable to wear. And to keep it all together, we use plant-based resin – no toxic glue here. </p>
       <p>This helmet is all about balance: strength and sustainability, style and safety. It's the kind of gear you'd want to wear whether you're riding your bike or saving the planet. Every piece of it was picked to do a job *and* do it without hurting nature. So yeah, it protects your head – but also your future.</p>
-      <div class="fun-fact">🧠 <em>Fun Fact: Cork isn’t just eco-friendly – it can actually bounce back to shape after compression, making it perfect for helmet safety layers.</em></div>
+      <div class="fun-fact">🌱 <em>Fun Fact: Cork isn’t just eco-friendly – it can actually bounce back to shape after compression, making it perfect for helmet safety layers.</em></div>
     </div>
   </section>
 
   <section id="materials">
     <div class="card">
-      <h2>Materials</h2>
+      <h2><i class="fas fa-cubes"></i> Materials</h2>
       <ul>
         <li><strong>Bamboo Fiber Shell:</strong> Acts as the outer layer of the helmet. Bamboo is super strong and grows really fast, making it sustainable and perfect for protection. You can find it in eco-friendly building supplies or some clothing products.</li>
         <li><strong>Cork Foam Padding:</strong> This padding goes inside the helmet to absorb shock during an impact. Cork is soft, light, and bouncy. It comes from the bark of cork oak trees, mostly found in places like Portugal.</li>
@@ -161,7 +194,7 @@
 
   <section id="why">
     <div class="card">
-      <h2>Why Choose Eco Guard?</h2>
+      <h2><i class="fas fa-star"></i> Why Choose Eco Guard?</h2>
       <ul>
         <li class="tooltip" data-tooltip="No harmful materials that pollute the Earth">NO plastic</li>
         <li class="tooltip" data-tooltip="Made to protect your head from impact">Built for safety.</li>
@@ -173,7 +206,7 @@
 
   <section id="creators">
     <div class="card">
-      <h2>Creators</h2>
+      <h2><i class="fas fa-user-edit"></i> Creators</h2>
       <p>This project was made by:</p>
       <ul>
         <li><strong>Ayaan Farooq</strong></li>
@@ -181,6 +214,8 @@
       </ul>
     </div>
   </section>
+
+  <div class="alert-box">🌟 You're viewing the latest eco helmet design!</div>
 
   <script>
     function showSection(id) {
@@ -191,4 +226,3 @@
   </script>
 </body>
 </html>
-
