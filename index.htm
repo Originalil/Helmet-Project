@@ -3,128 +3,223 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Helmet Catcher Game</title>
+  <title>Eco Guard</title>
+  <meta name="description" content="Eco Guard is a 100% natural, sustainable, and compostable helmet made with bamboo, cork, cotton, and plant-based resin. Learn how it protects both your head and the environment.">
+  <meta name="author" content="Ayaan Farooq, Harrison Vesey">
+  <meta name="keywords" content="eco helmet, sustainable helmet, natural materials, compostable, bamboo helmet, cork padding, green technology, helmet design">
+  <meta name="robots" content="index, follow">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
   <style>
     body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #e8f5e9;
+      color: #333;
       margin: 0;
       padding: 0;
-      background-color: #e8f5e9;
+      scroll-behavior: smooth;
+    }
+    header {
+      background: linear-gradient(135deg, #2e7d32, #66bb6a);
+      color: white;
+      padding: 2rem 1rem;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+    nav {
+      background-color: #1b5e20;
       display: flex;
+      flex-wrap: wrap;
       justify-content: center;
-      align-items: center;
-      height: 100vh;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      gap: 0.75rem;
+      padding: 0.75rem 0.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
-    canvas {
-      border: 2px solid #333;
-      background-color: #fff;
+    nav a {
+      color: white;
+      text-decoration: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 25px;
+      background-color: #2e7d32;
+      font-weight: bold;
+      transition: all 0.3s ease;
     }
-    #game-over {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 36px;
-      color: #333;
+    nav a:hover {
+      background-color: #43a047;
+      transform: scale(1.05);
+    }
+    section {
+      padding: 2rem;
       display: none;
+      animation: fadeIn 0.6s ease-in-out forwards;
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    section.active {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    h1, h2 {
+      margin-bottom: 1rem;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+    }
+    ul {
+      padding-left: 1.25rem;
+    }
+    ul li {
+      margin-bottom: 0.5rem;
+    }
+    .fun-fact {
+      font-style: italic;
+      background-color: #c8e6c9;
+      padding: 1rem;
+      border-radius: 12px;
+      margin-top: 1rem;
+    }
+    .tab-indicator {
+      width: 100%;
+      height: 5px;
+      background: linear-gradient(to right, #66bb6a, #2e7d32);
+      margin-top: -5px;
+      animation: move 2s linear infinite;
+    }
+    @keyframes move {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 100% 50%; }
+    }
+    .tooltip {
+      display: inline-block;
+      position: relative;
+      cursor: help;
+    }
+    .tooltip:hover::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      background: #333;
+      color: #fff;
+      padding: 6px 8px;
+      border-radius: 8px;
+      top: -35px;
+      white-space: nowrap;
+      font-size: 0.85rem;
+    }
+    .icon {
+      margin-right: 0.5rem;
+    }
+    .glow {
+      animation: glow 2s ease-in-out infinite alternate;
+    }
+    @keyframes glow {
+      from { text-shadow: 0 0 5px #a5d6a7, 0 0 10px #81c784; }
+      to { text-shadow: 0 0 20px #66bb6a, 0 0 30px #388e3c; }
+    }
+    .card i {
+      color: #4caf50;
+      margin-right: 0.5rem;
+    }
+    .alert-box {
+      position: fixed;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #81c784;
+      color: #1b5e20;
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      font-weight: bold;
+      animation: fadeInUp 1s ease forwards;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
 </head>
 <body>
-  <canvas id="gameCanvas" width="500" height="600"></canvas>
-  <div id="game-over">Game Over! Your Score: <span id="final-score"></span></div>
+  <header>
+    <h1 class="glow">Eco Guard</h1>
+    <p>Our priority is not you, it's the helmet.</p>
+    <div class="tab-indicator"></div>
+  </header>
+
+  <nav>
+    <a href="#" onclick="showSection('helmet')"><i class="fas fa-hard-hat icon"></i>Helmet Info</a>
+    <a href="#" onclick="showSection('materials')"><i class="fas fa-leaf icon"></i>Materials</a>
+    <a href="#" onclick="showSection('why')"><i class="fas fa-check icon"></i>Why Us</a>
+    <a href="#" onclick="showSection('creators')"><i class="fas fa-users icon"></i>Creators</a>
+  </nav>
+
+  <section id="helmet" class="active">
+    <div class="card">
+      <h2>Helmet Info</h2>
+      <p> N/A </p>
+      <p> N/A </p>
+      <div dclass="fun-fact">🌱 <em>Fun Fact: cork can actually bounce back to shape after its squished or compressed, which is useful for helmets</em></div>
+    </div>
+  </section>
+
+  <section id="materials">
+    <div class="card">
+      <h2>Materials</h2>
+        <li><strong>Bamboo Fiber Shell:</strong> This is the outer layer of the helmet, Bamboo is super strong and grows really fast, making it easy to produce and perfect for protection.</li>
+        <li><strong>Cork Foam Padding:</strong> This padding goes inside the helmet to absorb any impact, cork is soft and bouncy. It comes from the bark of cork oak trees, mostly found in places like Portugal.</li>
+        <li><strong>Organic Cotton Lining:</strong> This is the soft layer that touches your head, It's really comfy for your head. Organic cotton is grown without chemicals .</li>
+        <li><strong>Plant Based Resin:</strong> This is basically a natural glue, it holds all the parts of the helmet together. It’s made from stuff like pine sap and can be obtained from therex.</li>
+    </div>
+  </section>
+  <section id="why">
+    <div class="card">
+      <h2>Why Choose Eco Guard?</h2>
+      <ul>
+        <li class="tooltip" data-tooltip="N/A>N/A</li>
+        <li class="tooltip" data-tooltip="N/A">N/A</li>
+        <li class="tooltip" data-tooltip="N/A">N/A</li>
+        <li class="tooltip" data-tooltip="N/A">N/A</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="creators">
+    <div class="card">
+      <h2>Creators</h2>
+      <p>This project was made by:</p>
+      <ul>
+        <li><strong>Ayaan Farooq</strong></li>
+        <li><strong>Harrison Vesey</strong></li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="alert-box">2025 Stem Project</div>
 
   <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-
-    let basketWidth = 100;
-    let basketHeight = 20;
-    let basketX = (canvas.width - basketWidth) / 2;
-    let basketSpeed = 5;
-    let leftArrowPressed = false;
-    let rightArrowPressed = false;
-
-    let helmets = [];
-    let helmetSize = 30;
-    let helmetSpeed = 3;
-    let score = 0;
-    let gameOver = false;
-
-    function createHelmet() {
-      let x = Math.random() * (canvas.width - helmetSize);
-      helmets.push({ x: x, y: -helmetSize });
+    function showSection(id) {
+      const sections = document.querySelectorAll('section');
+      sections.forEach(section => section.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
     }
-
-    function drawBasket() {
-      ctx.fillStyle = '#4caf50';
-      ctx.fillRect(basketX, canvas.height - basketHeight, basketWidth, basketHeight);
-    }
-
-    function drawHelmets() {
-      ctx.fillStyle = '#ffeb3b';
-      helmets.forEach((helmet, index) => {
-        if (helmet.y + helmetSize > canvas.height - basketHeight && helmet.x > basketX && helmet.x < basketX + basketWidth) {
-          score++;
-          helmets.splice(index, 1);
-        } else if (helmet.y > canvas.height) {
-          gameOver = true;
-        } else {
-          helmet.y += helmetSpeed;
-          ctx.beginPath();
-          ctx.arc(helmet.x + helmetSize / 2, helmet.y + helmetSize / 2, helmetSize / 2, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      });
-    }
-
-    function moveBasket() {
-      if (leftArrowPressed && basketX > 0) {
-        basketX -= basketSpeed;
-      }
-      if (rightArrowPressed && basketX < canvas.width - basketWidth) {
-        basketX += basketSpeed;
-      }
-    }
-
-    function drawScore() {
-      ctx.font = '20px Arial';
-      ctx.fillStyle = '#333';
-      ctx.fillText('Score: ' + score, 10, 30);
-    }
-
-    function gameLoop() {
-      if (gameOver) {
-        document.getElementById('final-score').textContent = score;
-        document.getElementById('game-over').style.display = 'block';
-        return;
-      }
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      moveBasket();
-      drawBasket();
-      drawHelmets();
-      drawScore();
-
-      if (Math.random() < 0.02) {
-        createHelmet();
-      }
-
-      requestAnimationFrame(gameLoop);
-    }
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowLeft') leftArrowPressed = true;
-      if (e.key === 'ArrowRight') rightArrowPressed = true;
-    });
-
-    document.addEventListener('keyup', (e) => {
-      if (e.key === 'ArrowLeft') leftArrowPressed = false;
-      if (e.key === 'ArrowRight') rightArrowPressed = false;
-    });
-
-    gameLoop();
   </script>
 </body>
 </html>
