@@ -4,29 +4,83 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>USA States & Popes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: linear-gradient(to right, #007BFF, #00C6FF);
+            color: white;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.3);
+        }
+        .section { display: none; }
+        .btn {
+            padding: 12px;
+            margin: 10px;
+            background-color: white;
+            color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.3s ease-in-out;
+        }
+        .btn:hover {
+            background-color: #00C6FF;
+            color: white;
+        }
+        img {
+            width: 100%;
+            border-radius: 10px;
+        }
+    </style>
 </head>
 <body>
-    <h1>USA States & Popes Gallery</h1>
+    <div class="container">
+        <h1>USA States & Popes Gallery</h1>
 
-    <h2>Map of the USA with All 50 States Labeled</h2>
-    <img src="https://www.vectorstock.com/royalty-free-vector/usa-50-states-with-state-names-vector-1075809" alt="USA Map with States" width="600">
+        <button class="btn" onclick="showSection('states')">View USA Map</button>
+        <button class="btn" onclick="showSection('popes')">View Popes List</button>
 
-    <h2>List of Popes Since 1950</h2>
-    <ul>
-        <li>Pope Pius XII (1939–1958)</li>
-        <li>Pope John XXIII (1958–1963)</li>
-        <li>Pope Paul VI (1963–1978)</li>
-        <li>Pope John Paul I (1978)</li>
-        <li>Pope John Paul II (1978–2005)</li>
-        <li>Pope Benedict XVI (2005–2013)</li>
-        <li>Pope Francis (2013–Present)</li>
-    </ul>
+        <div id="states" class="section">
+            <h2>Map of the USA with All 50 States Labeled</h2>
+            <img src="your-image.png" alt="USA Map with States">
+        </div>
 
-    <h2>More Information</h2>
-    <ul>
-        <li><a href="https://en.wikipedia.org/wiki/List_of_popes">Wikipedia List of Popes</a>(^7^)</li>
-        <li><a href="https://catholic-hierarchy.org/bishop/spope0.html">Catholic Hierarchy</a>(^8^)</li>
-    </ul>
+        <div id="popes" class="section">
+            <h2>List of Popes Since 1950</h2>
+            <ul>
+                <li>Pope Pius XII (1939–1958)</li>
+                <li>Pope John XXIII (1958–1963)</li>
+                <li>Pope Paul VI (1963–1978)</li>
+                <li>Pope John Paul I (1978)</li>
+                <li>Pope John Paul II (1978–2005)</li>
+                <li>Pope Benedict XVI (2005–2013)</li>
+                <li>Pope Francis (2013–Present)</li>
+            </ul>
+
+            <h2>More Information</h2>
+            <ul>
+                <li><a href="https://en.wikipedia.org/wiki/List_of_popes" style="color: white;">Wikipedia List of Popes</a></li>
+                <li><a href="https://catholic-hierarchy.org/bishop/spope0.html" style="color: white;">Catholic Hierarchy</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => section.style.display = 'none');
+            document.getElementById(sectionId).style.display = 'block';
+        }
+    </script>
 </body>
 </html>
 
