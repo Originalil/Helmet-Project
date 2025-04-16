@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -93,17 +93,6 @@
       margin-top: 5px;
     }
 
-    .challenge-section {
-      display: none;
-      flex-direction: column;
-    }
-
-    .challenge-info {
-      color: #c33;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-
     .shop-icon {
       position: absolute;
       top: 20px;
@@ -119,7 +108,7 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(255, 255, 255, 0.97);
       z-index: 10;
       padding: 40px;
       display: none;
@@ -141,13 +130,13 @@
       padding: 15px;
       margin: 10px 0;
       border-radius: 12px;
-      background: #f2f2f2;
+      background: #e3f2fd;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       font-size: 18px;
     }
 
     .shop-item button {
-      background: #ffaa00;
+      background: #ffa000;
       padding: 10px 20px;
       border: none;
       border-radius: 8px;
@@ -157,132 +146,145 @@
     }
 
     .shop-item button:hover {
-      background: #cc8800;
+      background: #ff8f00;
     }
 
-    .slide {
-      display: none;
-    }
-
-    .active {
-      display: block;
-    }
-
-    .nav-buttons {
-      position: absolute;
-      top: 50%;
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .nav-button {
-      background: rgba(0, 0, 0, 0.3);
-      color: white;
-      border: none;
-      padding: 10px;
-      cursor: pointer;
-    }
+    .rarity-common { color: #888; }
+    .rarity-rare { color: #4a90e2; }
+    .rarity-epic { color: #9c27b0; }
+    .rarity-legendary { color: #f57c00; }
+    .rarity-insanity { color: #d50000; font-weight: bold; }
   </style>
 </head>
-<!-- Inside <body> replace your script with this version -->
-<script>
-  const tokensDisplay = document.querySelector('.tokens');
-  const resultDisplay = document.querySelector('.result');
-  const quoteDisplay = document.querySelector('.quote');
-  let tokens = 100;
-  let cooldown = false;
+<body>
+  <div class="slideshow-container">
+    <div class="container" id="game-slide">
+      <h1>Mental Gamble</h1>
+      <div class="tokens" id="tokenCount">Tokens: 100</div>
+      <div class="luck-boost" id="luckDisplay">Luck Boost: 0%</div>
+      <div class="mood-buttons">
+        <button class="button" onclick="gamble()">Gamble</button>
+      </div>
+      <div class="result" id="resultText"></div>
+      <div class="quote" id="quoteText"></div>
+      <div class="shop-icon" onclick="toggleShop()">🛒</div>
+    </div>
 
-  function updateTokensDisplay() {
-    tokensDisplay.textContent = `Tokens: ${tokens}`;
-  }
+    <div class="shop-panel" id="shop">
+      <h2>Shop</h2>
+      <div class="shop-item">
+        <span>+10% Luck Boost (50 tokens)</span>
+        <button onclick="buyLuck()">Buy</button>
+      </div>
+      <div class="shop-item">
+        <span>Reduce Cooldown by 1s (100 tokens)</span>
+        <button onclick="buyCooldown()">Buy</button>
+      </div>
+      <button class="button" onclick="toggleShop()">Close Shop</button>
+    </div>
+  </div>
 
-  function getRandomQuote(rarity) {
+  <script>
+    let tokens = 100;
+    let luckBoost = 0;
+    let cooldown = 5000;
+    let lastGambleTime = 0;
+    let lastRiskTime = 0;
+    let riskCooldown = 15000;
+
+    const resultText = document.getElementById("resultText");
+    const quoteText = document.getElementById("quoteText");
+    const tokenCount = document.getElementById("tokenCount");
+    const luckDisplay = document.getElementById("luckDisplay");
+
     const quotes = {
-      common: ["You win some, you lose some.", "Try again, maybe?"],
-      rare: ["Luck is on your side!", "Rare find, nice!"],
-      epic: ["EPIC! You defied the odds!", "Unreal pull!"],
-      legendary: ["LEGENDARY MOMENT!", "Golden silence breaks!"],
-    };
-    const rarityQuotes = quotes[rarity] || quotes.common;
-    return rarityQuotes[Math.floor(Math.random() * rarityQuotes.length)];
-  }
-
-  function getRarity() {
-    const rand = Math.random();
-    if (rand > 0.995) return 'legendary';
-    if (rand > 0.97) return 'epic';
-    if (rand > 0.85) return 'rare';
-    return 'common';
-  }
-
-  function animateRarityRoll(rarity) {
-    const rarityColors = {
-      common: '#ccc',
-      rare: '#4aa3df',
-      epic: '#c36fff',
-      legendary: 'gold',
+      common: "Keep trying. Every effort counts.",
+      rare: "Nice! You're doing well!",
+      epic: "Epic win! You're on fire!",
+      legendary: "Legendary moment! You're unstoppable!",
+      insanity: "INSANE! Reality bent in your favor!"
     };
 
-    resultDisplay.style.color = rarityColors[rarity];
-    resultDisplay.textContent = `Rarity: ${rarity.toUpperCase()}!`;
-
-    quoteDisplay.textContent = getRandomQuote(rarity);
-    quoteDisplay.style.color = rarity === 'legendary' ? 'gold' : '#666';
-
-    setTimeout(() => {
-      resultDisplay.textContent = '';
-      quoteDisplay.textContent = '';
-    }, 1500);
-  }
-
-  function takeARisk() {
-    if (cooldown) return;
-
-    cooldown = true;
-    document.getElementById('riskBtn').classList.add('cooldown');
-
-    setTimeout(() => {
-      document.getElementById('riskBtn').classList.remove('cooldown');
-      cooldown = false;
-    }, 1500);
-
-    const rarity = getRarity();
-    animateRarityRoll(rarity);
-
-    let change = 0;
-
-    // Reward system logic: high token count means more chance to lose
-    const riskFactor = Math.random();
-    const tokenPenalty = Math.ceil(Math.random() * tokens * 0.1);
-    const tokenGain = Math.ceil(Math.random() * 20 + 10);
-
-    switch (rarity) {
-      case 'legendary':
-        change = tokenGain * 10;
-        break;
-      case 'epic':
-        change = tokenGain * 4;
-        break;
-      case 'rare':
-        change = tokenGain;
-        break;
-      case 'common':
-        change = -tokenPenalty;
-        break;
+    function updateDisplay() {
+      tokenCount.textContent = `Tokens: ${tokens}`;
+      luckDisplay.textContent = `Luck Boost: ${luckBoost}%`;
     }
 
-    tokens += change;
-    if (tokens < 0) tokens = 0;
+    function toggleShop() {
+      const shop = document.getElementById("shop");
+      shop.style.display = shop.style.display === "flex" ? "none" : "flex";
+    }
 
-    updateTokensDisplay();
-  }
+    function buyLuck() {
+      if (tokens >= 50) {
+        tokens -= 50;
+        luckBoost += 10;
+        updateDisplay();
+      } else {
+        alert("Not enough tokens!");
+      }
+    }
 
-  // Attach risk button event
-  document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('riskBtn').addEventListener('click', takeARisk);
-    updateTokensDisplay();
-  });
-</script>
+    function buyCooldown() {
+      if (tokens >= 100 && cooldown > 1000) {
+        tokens -= 100;
+        cooldown -= 1000;
+        updateDisplay();
+      } else if (cooldown <= 1000) {
+        alert("Cooldown can't go lower than 1 second!");
+      } else {
+        alert("Not enough tokens!");
+      }
+    }
 
+    function getRarity() {
+      let roll = Math.random() * 100;
+      let adjustedRoll = roll - (luckBoost * 0.5);
 
+      if (adjustedRoll < 40) return "common";
+      if (adjustedRoll < 75) return "rare";
+      if (adjustedRoll < 93) return "epic";
+      if (adjustedRoll < 99) return "legendary";
+      return "insanity";
+    }
+
+    function gamble() {
+      let now = Date.now();
+      if (now - lastGambleTime < cooldown) {
+        resultText.textContent = "Wait for cooldown!";
+        return;
+      }
+      lastGambleTime = now;
+
+      // Risk check
+      let riskChance = Math.random();
+      if (riskChance < 0.1 && now - lastRiskTime > riskCooldown) {
+        lastRiskTime = now;
+        let riskLoss = Math.floor(tokens * (Math.random() * 0.25 + 0.1));
+        tokens = Math.max(0, tokens - riskLoss);
+        resultText.innerHTML = `⚠️ <span style="color: #c00;">Risk occurred! You lost ${riskLoss} tokens.</span>`;
+        updateDisplay();
+        return;
+      }
+
+      let rarity = getRarity();
+      let earnings = {
+        common: 5,
+        rare: 15,
+        epic: 30,
+        legendary: 100,
+        insanity: 300
+      }[rarity];
+
+      tokens += earnings;
+      resultText.innerHTML = `You got a <span class="rarity-${rarity}">${rarity.toUpperCase()}</span>! +${earnings} tokens`;
+      quoteText.textContent = quotes[rarity];
+      updateDisplay();
+    }
+
+    updateDisplay();
+  </script>
+</body>
+</html>
+
+ 
