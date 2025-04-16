@@ -1,118 +1,272 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mental Gambling Health App</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 20px;
-        }
-        .button {
-            padding: 10px 20px;
-            margin: 10px;
-            cursor: pointer;
-            border: 1px solid #ccc;
-            background-color: #f1f1f1;
-            border-radius: 5px;
-        }
-        .button:hover {
-            background-color: #e1e1e1;
-        }
-        .mood-buttons {
-            display: flex;
-            justify-content: center;
-            margin: 20px;
-        }
-        .mood-buttons button {
-            margin: 10px;
-        }
-        .result {
-            margin-top: 20px;
-            font-size: 18px;
-        }
-        .quote {
-            margin-top: 15px;
-            font-style: italic;
-            color: #555;
-        }
-        .tokens {
-            margin-top: 20px;
-            font-size: 22px;
-            font-weight: bold;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mental Gamble</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(145deg, #d1e8ff, #f7faff);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: #fff;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      position: relative;
+    }
+
+    h1 {
+      font-size: 28px;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .tokens {
+      font-size: 22px;
+      font-weight: bold;
+      color: #008cff;
+      margin-bottom: 20px;
+    }
+
+    .mood-buttons, .challenge-section {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .button {
+      background: #008cff;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.3s ease;
+    }
+
+    .button:hover {
+      background: #005fab;
+    }
+
+    .result {
+      font-size: 18px;
+      margin-top: 10px;
+    }
+
+    .quote {
+      margin-top: 8px;
+      font-style: italic;
+      color: #555;
+    }
+
+    .challenge-section {
+      display: none;
+      flex-direction: column;
+    }
+
+    .challenge-info {
+      margin-bottom: 10px;
+      color: #c33;
+      font-weight: bold;
+    }
+
+    .fade {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* SHOP */
+    .shop {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    .shop-panel {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      background: #f9f9f9;
+      border: 1px solid #ccc;
+      padding: 15px;
+      border-radius: 10px;
+      position: absolute;
+      top: 60px;
+      right: 20px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+
+    .shop-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .shop-item button {
+      background-color: #ff7700;
+    }
+
+    .shop-item button:hover {
+      background-color: #e05f00;
+    }
+
+  </style>
 </head>
 <body>
 
-<h1>Mental Gambling Health App</h1>
-<p>Start with 1 mental token. Choose your mood, and see what you get!</p>
+  <div class="container fade">
+    <div class="shop" onclick="toggleShop()">🛒</div>
+    <div class="shop-panel" id="shopPanel">
+      <div class="shop-item">
+        <span>No Cooldown (1000 tokens)</span>
+        <button class="button" onclick="buyNoCooldown()">Buy</button>
+      </div>
+    </div>
 
-<div class="tokens">
-    Tokens: <span id="tokens">1</span>
-</div>
+    <h1>Mental Gamble</h1>
+    <div class="tokens">Tokens: <span id="tokens">1</span></div>
 
-<div class="mood-buttons">
-    <button class="button" onclick="gamble('happy')">Happy</button>
-    <button class="button" onclick="gamble('sad')">Sad</button>
-    <button class="button" onclick="gamble('angry')">Angry</button>
-    <button class="button" onclick="gamble('anxious')">Anxious</button>
-    <button class="button" onclick="gamble('calm')">Calm</button>
-</div>
+    <div class="mood-buttons">
+      <button class="button" onclick="gamble('happy')">Happy</button>
+      <button class="button" onclick="gamble('sad')">Sad</button>
+      <button class="button" onclick="gamble('angry')">Angry</button>
+      <button class="button" onclick="gamble('anxious')">Anxious</button>
+      <button class="button" onclick="gamble('calm')">Calm</button>
+    </div>
 
-<div id="result" class="result"></div>
-<div id="quote" class="quote"></div>
+    <div id="result" class="result"></div>
+    <div id="quote" class="quote"></div>
 
-<script>
+    <div class="challenge-section" id="challenge">
+      <div class="challenge-info">Challenge Mode Unlocked!</div>
+      <button class="button" onclick="challenge()">Take a Risk (-5 Tokens)</button>
+    </div>
+  </div>
+
+  <script>
     let mentalTokens = 1;
-    const tokenElement = document.getElementById("tokens");
+    let cooldown = false;
+    let noCooldownUnlocked = false;
+
+    const tokenDisplay = document.getElementById("tokens");
+    const resultDisplay = document.getElementById("result");
+    const quoteDisplay = document.getElementById("quote");
+    const challengeSection = document.getElementById("challenge");
+    const shopPanel = document.getElementById("shopPanel");
 
     const quotes = {
-        happy: "Happiness is not something ready-made. It comes from your own actions.",
-        sad: "Sadness may be a temporary feeling, but it can lead to greater understanding.",
-        angry: "Anger is an energy, use it to fuel positive change.",
-        anxious: "The future belongs to those who prepare for it today.",
-        calm: "Calmness is the cradle of power."
+      happy: "Happiness is not something ready-made. It comes from your own actions.",
+      sad: "Sadness may be a temporary feeling, but it can lead to greater understanding.",
+      angry: "Anger is an energy, use it to fuel positive change.",
+      anxious: "The future belongs to those who prepare for it today.",
+      calm: "Calmness is the cradle of power."
     };
 
     const rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary"];
-    
-    function gamble(mood) {
-        const rarity = getRarity();
-        const quote = quotes[mood];
-        const tokensWon = calculateTokens(rarity);
+    const rarityRewards = {
+      "Common": 1,
+      "Uncommon": 2,
+      "Rare": 3,
+      "Epic": 5,
+      "Legendary": 10
+    };
 
-        mentalTokens += tokensWon;
-        tokenElement.innerText = mentalTokens;
-
-        document.getElementById("result").innerText = `You got a ${rarity} result! You won ${tokensWon} tokens.`;
-        document.getElementById("quote").innerText = `"${quote}"`;
+    function updateTokens(amount) {
+      mentalTokens += amount;
+      if (mentalTokens < 0) mentalTokens = 0;
+      tokenDisplay.textContent = mentalTokens;
+      if (mentalTokens >= 10) {
+        challengeSection.style.display = "flex";
+      } else {
+        challengeSection.style.display = "none";
+      }
     }
 
     function getRarity() {
-        const random = Math.random();
-        if (random < 0.2) return rarities[0]; // 20% chance for Common
-        if (random < 0.4) return rarities[1]; // 20% chance for Uncommon
-        if (random < 0.6) return rarities[2]; // 20% chance for Rare
-        if (random < 0.8) return rarities[3]; // 20% chance for Epic
-        return rarities[4]; // 20% chance for Legendary
+      const r = Math.random();
+      if (r < 0.3) return "Common";
+      else if (r < 0.5) return "Uncommon";
+      else if (r < 0.7) return "Rare";
+      else if (r < 0.9) return "Epic";
+      return "Legendary";
     }
 
-    function calculateTokens(rarity) {
-        switch (rarity) {
-            case "Common": return 1;
-            case "Uncommon": return 2;
-            case "Rare": return 3;
-            case "Epic": return 5;
-            case "Legendary": return 10;
-        }
+    function gamble(mood) {
+      if (cooldown && !noCooldownUnlocked) {
+        resultDisplay.textContent = "⏳ Wait for cooldown...";
+        return;
+      }
+
+      cooldown = true;
+      if (!noCooldownUnlocked) {
+        setTimeout(() => {
+          cooldown = false;
+        }, 2000);
+      }
+
+      const rarity = getRarity();
+      const tokensWon = rarityRewards[rarity];
+      const quote = quotes[mood];
+
+      updateTokens(tokensWon);
+      resultDisplay.textContent = `You felt ${mood}. You got a ${rarity} result! +${tokensWon} tokens.`;
+      quoteDisplay.textContent = `"${quote}"`;
     }
-</script>
+
+    function challenge() {
+      if (mentalTokens < 5) {
+        alert("Not enough tokens for the challenge!");
+        return;
+      }
+
+      const outcome = Math.random();
+      updateTokens(-5); // Cost to enter
+      if (outcome < 0.5) {
+        updateTokens(3);
+        resultDisplay.textContent = "You took the challenge and gained 3 bonus tokens!";
+      } else {
+        resultDisplay.textContent = "Challenge failed. Better luck next time!";
+      }
+      quoteDisplay.textContent = "";
+    }
+
+    function toggleShop() {
+      shopPanel.style.display = shopPanel.style.display === "flex" ? "none" : "flex";
+    }
+
+    function buyNoCooldown() {
+      if (mentalTokens >= 1000) {
+        updateTokens(-1000);
+        noCooldownUnlocked = true;
+        alert("✅ No Cooldown purchased! You can now gamble freely.");
+        shopPanel.style.display = "none";
+      } else {
+        alert("❌ You need 1000 tokens to buy No Cooldown!");
+      }
+    }
+  </script>
 
 </body>
 </html>
 
-
-export default MoodTrackerApp;
