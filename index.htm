@@ -21,7 +21,7 @@
       border-radius: 20px;
       padding: 30px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-      max-width: 400px;
+      max-width: 500px;
       width: 100%;
       text-align: center;
       position: relative;
@@ -33,7 +33,7 @@
     }
 
     .tokens {
-      font-size: 20px;
+      font-size: 22px;
       color: #0066cc;
       margin-bottom: 20px;
     }
@@ -47,7 +47,7 @@
     }
 
     .button {
-      padding: 10px 16px;
+      padding: 12px 20px;
       background: #0077ff;
       color: white;
       border: none;
@@ -92,31 +92,33 @@
       position: absolute;
       top: 20px;
       right: 20px;
-      width: 28px;
-      height: 28px;
+      width: 36px;
+      height: 36px;
       cursor: pointer;
     }
 
     .shop-panel {
       position: absolute;
-      top: 60px;
+      top: 70px;
       right: 20px;
-      background: #f9f9f9;
-      border: 1px solid #ccc;
-      padding: 15px;
-      border-radius: 10px;
+      background: #ffffff;
+      border: 2px solid #0077ff;
+      padding: 20px;
+      border-radius: 12px;
       display: none;
       flex-direction: column;
-      gap: 10px;
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+      gap: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      width: 280px;
     }
 
     .shop-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 8px 0;
+      padding: 10px 0;
       border-bottom: 1px solid #ddd;
+      font-size: 16px;
     }
 
     .shop-item:last-child {
@@ -125,10 +127,11 @@
 
     .shop-item button {
       background: #ffaa00;
-      padding: 6px 12px;
+      padding: 8px 14px;
       border: none;
       border-radius: 6px;
       color: white;
+      font-weight: bold;
       cursor: pointer;
     }
 
@@ -176,7 +179,7 @@
 
     <div class="challenge-section" id="challenge">
       <div class="challenge-info">Challenge Mode Unlocked!</div>
-      <button class="button" onclick="challenge()">Take a Risk (-5 Tokens)</button>
+      <button class="button" onclick="challenge()">Take a Risk</button>
     </div>
   </div>
 
@@ -246,14 +249,24 @@
     }
 
     function challenge() {
-      if (tokens < 5) return alert("Not enough tokens!");
-      updateTokens(-5);
-      const win = Math.random() < 0.5;
-      if (win) {
-        updateTokens(3);
-        resultDisplay.textContent = "You survived the challenge and gained 3 tokens!";
+      const mode = Math.random();
+      if (mode < 0.5) {
+        // Gamble mode
+        if (tokens < 5) return alert("Not enough tokens!");
+        updateTokens(-5);
+        const win = Math.random() < 0.5;
+        if (win) {
+          updateTokens(3);
+          resultDisplay.textContent = "You survived the challenge and gained 3 tokens!";
+        } else {
+          resultDisplay.textContent = "Challenge failed. You lost your 5 tokens.";
+        }
       } else {
-        resultDisplay.textContent = "Challenge failed. You lost your 5 tokens.";
+        // Punishment mode
+        const outcomes = [-1, -2, -3, -4, -5, -6, -7, -8, -9, -10, Math.floor(-tokens / 2)];
+        const penalty = outcomes[Math.floor(Math.random() * outcomes.length)];
+        updateTokens(penalty);
+        resultDisplay.textContent = `Uh-oh! Random consequence... You lost ${-penalty} tokens.`;
       }
       quoteDisplay.textContent = "";
     }
