@@ -101,7 +101,7 @@
       position: absolute;
       top: 60px;
       right: 20px;
-      background: #f1f1f1;
+      background: #f9f9f9;
       border: 1px solid #ccc;
       padding: 15px;
       border-radius: 10px;
@@ -115,10 +115,21 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .shop-item:last-child {
+      border-bottom: none;
     }
 
     .shop-item button {
       background: #ffaa00;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
     }
 
     .shop-item button:hover {
@@ -132,8 +143,20 @@
 
     <div class="shop-panel" id="shopPanel">
       <div class="shop-item">
-        <span>No Cooldown (1000 tokens)</span>
-        <button class="button" onclick="buyNoCooldown()">Buy</button>
+        <span>No Cooldown (450 tokens)</span>
+        <button onclick="buyNoCooldown()">Buy</button>
+      </div>
+      <div class="shop-item">
+        <span>1.5x Luck (200 tokens)</span>
+        <button onclick="buyLuck(1.5, 200)">Buy</button>
+      </div>
+      <div class="shop-item">
+        <span>2x Luck (500 tokens)</span>
+        <button onclick="buyLuck(2, 500)">Buy</button>
+      </div>
+      <div class="shop-item">
+        <span>4x Luck (1000 tokens)</span>
+        <button onclick="buyLuck(4, 1000)">Buy</button>
       </div>
     </div>
 
@@ -161,6 +184,7 @@
     let tokens = 1;
     let cooldown = false;
     let noCooldown = false;
+    let luckMultiplier = 1;
 
     const tokenDisplay = document.getElementById("tokens");
     const resultDisplay = document.getElementById("result");
@@ -176,12 +200,13 @@
       calm: "The nearer a man comes to a calm mind, the closer he is to strength."
     };
 
-    const chances = [
-      { type: "Common", prob: 0.5, reward: 1 },
+    const baseChances = [
+      { type: "Common", prob: 0.55, reward: 1 },
       { type: "Uncommon", prob: 0.25, reward: 2 },
-      { type: "Rare", prob: 0.15, reward: 4 },
-      { type: "Epic", prob: 0.08, reward: 6 },
-      { type: "Legendary", prob: 0.02, reward: 10 }
+      { type: "Rare", prob: 0.12, reward: 4 },
+      { type: "Epic", prob: 0.06, reward: 6 },
+      { type: "Legendary", prob: 0.015, reward: 10 },
+      { type: "Mythic", prob: 0.005, reward: 20 }
     ];
 
     function updateTokens(val) {
@@ -192,13 +217,13 @@
     }
 
     function getRarity() {
-      let r = Math.random();
+      let r = Math.random() / luckMultiplier;
       let sum = 0;
-      for (let i = 0; i < chances.length; i++) {
-        sum += chances[i].prob;
-        if (r < sum) return chances[i];
+      for (let i = 0; i < baseChances.length; i++) {
+        sum += baseChances[i].prob;
+        if (r < sum) return baseChances[i];
       }
-      return chances[0];
+      return baseChances[0];
     }
 
     function gamble(button, mood) {
@@ -238,13 +263,24 @@
     }
 
     function buyNoCooldown() {
-      if (tokens >= 1000) {
-        updateTokens(-1000);
+      if (tokens >= 450) {
+        updateTokens(-450);
         noCooldown = true;
         alert("No Cooldown unlocked!");
         shopPanel.style.display = "none";
       } else {
-        alert("You need 1000 tokens to buy this!");
+        alert("You need 450 tokens to buy this!");
+      }
+    }
+
+    function buyLuck(multiplier, cost) {
+      if (tokens >= cost) {
+        updateTokens(-cost);
+        luckMultiplier = multiplier;
+        alert(multiplier + "x Luck Boost activated!");
+        shopPanel.style.display = "none";
+      } else {
+        alert("Not enough tokens for this boost!");
       }
     }
   </script>
