@@ -10,6 +10,17 @@
       background: linear-gradient(145deg, #e0f7ff, #f0f9ff);
       margin: 0;
       padding: 0;
+      overflow: hidden;
+    }
+
+    .slideshow-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      width: 100vw;
+      justify-content: center;
+      align-items: center;
+      position: relative;
     }
 
     .container {
@@ -18,9 +29,12 @@
       padding: 30px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
       max-width: 600px;
-      margin: 50px auto;
       text-align: center;
       position: relative;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
     h1 {
@@ -135,64 +149,104 @@
     .shop-item button:hover {
       background: #cc8800;
     }
+
+    .slide {
+      display: none;
+    }
+
+    .active {
+      display: block;
+    }
+
+    .nav-buttons {
+      position: absolute;
+      top: 50%;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .nav-button {
+      background: rgba(0, 0, 0, 0.3);
+      color: white;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <img src="https://cdn-icons-png.flaticon.com/512/263/263142.png" class="shop-icon" onclick="toggleShop()" alt="Shop Icon" />
+  <div class="slideshow-container" id="slideshow">
+    <div class="container slide active" id="gameSlide">
+      <img src="https://cdn-icons-png.flaticon.com/512/263/263142.png" class="shop-icon" onclick="toggleShop()" alt="Shop Icon" />
 
-    <div class="shop-panel" id="shopPanel">
-      <div class="shop-item">
-        <span>No Cooldown (200 tokens)</span>
-        <button onclick="buyNoCooldown()">Buy</button>
+      <div class="shop-panel" id="shopPanel">
+        <div class="shop-item">
+          <span>Cooldown Reduction (100 tokens)</span>
+          <button onclick="buyCooldown()">Buy</button>
+        </div>
+        <div class="shop-item">
+          <span>1.5x Luck (200 tokens)</span>
+          <button onclick="buyLuck(1.5, 200)">Buy</button>
+        </div>
+        <div class="shop-item">
+          <span>2x Luck (400 tokens)</span>
+          <button onclick="buyLuck(2, 400)">Buy</button>
+        </div>
+        <div class="shop-item">
+          <span>4x Luck (800 tokens)</span>
+          <button onclick="buyLuck(4, 800)">Buy</button>
+        </div>
+        <div class="shop-item">
+          <span>Golden Quote (random 10–300 bonus)</span>
+          <button onclick="buyGoldenQuote()">Buy</button>
+        </div>
+        <div class="shop-item">
+          <button onclick="toggleShop()">Close Shop</button>
+        </div>
       </div>
-      <div class="shop-item">
-        <span>1.5x Luck (75 tokens)</span>
-        <button onclick="buyLuck(1.5, 75)">Buy</button>
+
+      <h1>Mental Gamble</h1>
+      <div class="tokens">Tokens: <span id="tokens">1</span></div>
+      <div class="luck-boost">Luck Multiplier: <span id="luckDisplay">1x</span></div>
+
+      <div class="mood-buttons">
+        <button class="button" onclick="gamble(this, 'happy')">Happy</button>
+        <button class="button" onclick="gamble(this, 'sad')">Sad</button>
+        <button class="button" onclick="gamble(this, 'angry')">Angry</button>
+        <button class="button" onclick="gamble(this, 'anxious')">Anxious</button>
+        <button class="button" onclick="gamble(this, 'calm')">Calm</button>
       </div>
-      <div class="shop-item">
-        <span>2x Luck (150 tokens)</span>
-        <button onclick="buyLuck(2, 150)">Buy</button>
-      </div>
-      <div class="shop-item">
-        <span>4x Luck (300 tokens)</span>
-        <button onclick="buyLuck(4, 300)">Buy</button>
-      </div>
-      <div class="shop-item">
-        <span>Golden Quote (random 5–200 bonus)</span>
-        <button onclick="buyGoldenQuote()">Buy</button>
-      </div>
-      <div class="shop-item">
-        <button onclick="toggleShop()">Close Shop</button>
+
+      <div id="result" class="result"></div>
+      <div id="quote" class="quote"></div>
+
+      <div class="challenge-section" id="challenge">
+        <div class="challenge-info">Challenge Mode Unlocked!</div>
+        <button class="button" onclick="challenge()">Take a Risk</button>
       </div>
     </div>
 
-    <h1>Mental Gamble</h1>
-    <div class="tokens">Tokens: <span id="tokens">1</span></div>
-    <div class="luck-boost">Luck Multiplier: <span id="luckDisplay">1x</span></div>
-
-    <div class="mood-buttons">
-      <button class="button" onclick="gamble(this, 'happy')">Happy</button>
-      <button class="button" onclick="gamble(this, 'sad')">Sad</button>
-      <button class="button" onclick="gamble(this, 'angry')">Angry</button>
-      <button class="button" onclick="gamble(this, 'anxious')">Anxious</button>
-      <button class="button" onclick="gamble(this, 'calm')">Calm</button>
+    <div class="container slide" id="secondSlide">
+      <h2>Welcome to the Mental Gamble Game!</h2>
+      <p>This is an interactive, fun-filled token system game where you will make choices based on different moods.</p>
+      <p>Feel free to gamble your tokens, unlock special items, and face new challenges. Will you win big or lose it all? Time will tell!</p>
+      <button class="button" onclick="nextSlide()">Start Playing</button>
     </div>
 
-    <div id="result" class="result"></div>
-    <div id="quote" class="quote"></div>
-
-    <div class="challenge-section" id="challenge">
-      <div class="challenge-info">Challenge Mode Unlocked!</div>
-      <button class="button" onclick="challenge()">Take a Risk</button>
+    <div class="nav-buttons">
+      <button class="nav-button" onclick="prevSlide()">Previous</button>
+      <button class="nav-button" onclick="nextSlide()">Next</button>
     </div>
   </div>
 
   <script>
     let tokens = 1;
     let cooldown = false;
+    let cooldownTime = 5000; // 5 seconds
     let noCooldown = false;
     let luckMultiplier = 1;
+    let purchasedItems = [];
 
     const tokenDisplay = document.getElementById("tokens");
     const resultDisplay = document.getElementById("result");
@@ -200,6 +254,7 @@
     const challengeSection = document.getElementById("challenge");
     const shopPanel = document.getElementById("shopPanel");
     const luckDisplay = document.getElementById("luckDisplay");
+    const slideshow = document.getElementById("slideshow");
 
     const quotes = {
       happy: "Joy is a net of love by which you can catch souls.",
@@ -211,12 +266,12 @@
 
     const baseChances = [
       { type: "Common", prob: 0.5, reward: 1 },
-      { type: "Uncommon", prob: 0.2, reward: 2 },
-      { type: "Rare", prob: 0.12, reward: 4 },
-      { type: "Epic", prob: 0.07, reward: 6 },
-      { type: "Legendary", prob: 0.03, reward: 10 },
-      { type: "Mythic", prob: 0.015, reward: 30 },
-      { type: "Unreal", prob: 0.005, reward: 100 }
+      { type: "Uncommon", prob: 0.15, reward: 2 },
+      { type: "Rare", prob: 0.1, reward: 5 },
+      { type: "Epic", prob: 0.08, reward: 7 },
+      { type: "Legendary", prob: 0.05, reward: 10 },
+      { type: "Mythic", prob: 0.02, reward: 20 },
+      { type: "Unreal", prob: 0.01, reward: 50 }
     ];
 
     function updateTokens(val) {
@@ -243,7 +298,7 @@
     }
 
     function gamble(button, mood) {
-      if (cooldown && !noCooldown) return;
+      if (cooldown) return;
 
       const loseChance = Math.random();
       if (loseChance < 0.1) {
@@ -256,14 +311,12 @@
       }
       quoteDisplay.textContent = `"${quotes[mood]}"`;
 
-      if (!noCooldown) {
-        cooldown = true;
-        button.classList.add("cooldown");
-        setTimeout(() => {
-          cooldown = false;
-          button.classList.remove("cooldown");
-        }, 2000);
-      }
+      cooldown = true;
+      button.classList.add("cooldown");
+      setTimeout(() => {
+        cooldown = false;
+        button.classList.remove("cooldown");
+      }, cooldownTime);
     }
 
     function challenge() {
@@ -290,14 +343,14 @@
       shopPanel.style.display = shopPanel.style.display === "flex" ? "none" : "flex";
     }
 
-    function buyNoCooldown() {
-      if (tokens >= 200) {
-        updateTokens(-200);
-        noCooldown = true;
-        alert("No Cooldown unlocked!");
+    function buyCooldown() {
+      if (tokens >= 100) {
+        updateTokens(-100);
+        cooldownTime = 1000; // 1 second cooldown
+        alert("Cooldown reduced to 1 second!");
         toggleShop();
       } else {
-        alert("You need 200 tokens to buy this!");
+        alert("You need 100 tokens to buy this!");
       }
     }
 
@@ -314,11 +367,27 @@
     }
 
     function buyGoldenQuote() {
-      const bonus = Math.floor(Math.random() * 196) + 5;
+      const bonus = Math.floor(Math.random() * 290) + 10;
       updateTokens(bonus);
       resultDisplay.textContent = `Golden quote added ${bonus} tokens.`;
       quoteDisplay.textContent = `"Good thought."`;
       toggleShop();
+    }
+
+    function nextSlide() {
+      let activeSlide = document.querySelector(".slide.active");
+      let nextSlide = activeSlide.nextElementSibling;
+      if (!nextSlide) nextSlide = document.querySelector(".slide:first-child");
+      activeSlide.classList.remove("active");
+      nextSlide.classList.add("active");
+    }
+
+    function prevSlide() {
+      let activeSlide = document.querySelector(".slide.active");
+      let prevSlide = activeSlide.previousElementSibling;
+      if (!prevSlide) prevSlide = document.querySelector(".slide:last-child");
+      activeSlide.classList.remove("active");
+      prevSlide.classList.add("active");
     }
   </script>
 </body>
