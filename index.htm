@@ -1,1 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mental Gamble</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(145deg, #e0f7ff, #f0f9ff);
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
 
+    .slideshow-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      width: 100vw;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      max-width: 600px;
+      text-align: center;
+      position: relative;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .tokens {
+      font-size: 22px;
+      color: #0066cc;
+      margin-bottom: 10px;
+    }
+
+    .luck-boost {
+      font-size: 16px;
+      color: #888;
+      margin-bottom: 20px;
+    }
+
+    .mood-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .button {
+      padding: 20px 28px;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 20px;
+      transition: background 0.2s ease;
+      min-width: 120px;
+    }
+
+    .button.cooldown {
+      background-color: red !important;
+      cursor: not-allowed;
+    }
+
+    .happy { background-color: #4CAF50; }
+    .sad { background-color: #2196F3; }
+    .angry { background-color: orange; }
+    .calm { background-color: #9C27B0; }
+
+    .result {
+      font-size: 18px;
+      margin-top: 10px;
+    }
+
+    .quote {
+      font-style: italic;
+      color: #666;
+      margin-top: 5px;
+    }
+
+    .shop-icon {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 48px;
+      height: 48px;
+      background: url('https://img.icons8.com/ios-filled/50/shop.png') no-repeat center/contain;
+      cursor: pointer;
+    }
+
+    .shop-panel {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(255, 255, 255, 0.95);
+      z-index: 10;
+      padding: 40px;
+      display: none;
+      flex-direction: column;
+      overflow-y: auto;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .shop-panel h2 {
+      margin-bottom: 20px;
+    }
+
+    .shop-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 80%;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 12px;
+      background: #f2f2f2;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      font-size: 18px;
+    }
+
+    .shop-item button {
+      background: #ffaa00;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .shop-item button:hover {
+      background: #cc8800;
+    }
+
+    .effect-unreal {
+      animation: glow 1s infinite alternate;
+    }
+
+    @keyframes glow {
+      0% { box-shadow: 0 0 10px #ff0; }
+      100% { box-shadow: 0 0 20px #f0f; }
+    }
+  </style>
+</head>
+<body>
+  <div class="slideshow-container">
+    <div class="container slide active" id="game-slide">
+      <h1>Mental Gamble</h1>
+      <div class="tokens" id="tokenCount">Tokens: 0</div>
+      <div class="luck-boost" id="luckDisplay">Luck Boost: 0%</div>
+      <div class="mood-buttons">
+        <button class="button happy" onclick="playMood('happy', this)">Happy</button>
+        <button class="button sad" onclick="playMood('sad', this)">Sad</button>
+        <button class="button angry" onclick="playMood('angry', this)">Angry</button>
+        <button class="button calm" onclick="playMood('calm', this)">Calm</button>
+      </div>
+      <div class="result" id="resultText"></div>
+      <div class="quote" id="quoteText"></div>
+      <div class="shop-icon" onclick="toggleShop()"></div>
+    </div>
+
+    <div class="shop-panel" id="shop">
+      <h2>Shop</h2>
+      <div class="shop-item">
+        <span>+10% Luck Boost (50 tokens)</span>
+        <button onclick="buyLuck()">Buy</button>
+      </div>
+      <div class="shop-item">
+        <span>Reduce Cooldown by 1s (50 tokens, then increases)</span>
+        <button onclick="buyCooldown()">Buy</button>
+      </div>
+      <div class="shop-item">
+        <span>Unlock Risks (125 tokens)</span>
+        <button onclick="buyRisk()">Buy</button>
+      </div>
+      <button class="button" onclick="toggleShop()">Close Shop</button>
+    </div>
+  </div>
+
+  <script>
+    let tokens = 0;
+    let luckBoost = 0;
+    let cooldown = 5000;
+    let cooldownCost = 50;
+    let lastPlayTime = 0;
+
+    const quotes = {
+      happy: ["Joy sparks more chances!", "Smile brings fortune!"],
+      sad: ["Tough days teach us the most.", "Even sadness can bloom hope."],
+      angry: ["Turn anger into action!", "Fury fuels fortune!"],
+      calm: ["Peace clears your path.", "Still waters run deep."]
+    };
+
+    const rarities = [
+      { name: 'common', chance: 50, color: '#bbb', tokens: 5 },
+      { name: 'rare', chance: 30, color: '#3399ff', tokens: 15 },
+      { name: 'epic', chance: 12, color: '#9933ff', tokens: 30 },
+      { name: 'legendary', chance: 5, color: '#ff9900', tokens: 100 },
+      { name: 'unreal', chance: 2, color: '#8500ff', tokens: 150 },
+      { name: 'insanity', chance: 1, color: '#ff0055', tokens: 250 }
+    ];
+
+    function updateDisplay() {
+      document.getElementById("tokenCount").textContent = `Tokens: ${tokens}`;
+      document.getElementById("luckDisplay").textContent = `Luck Boost: ${luckBoost}%`;
+    }
+
+    function toggleShop() {
+      const shop = document.getElementById("shop");
+      shop.style.display = shop.style.display === "flex" ? "none" : "flex";
+    }
+
+    function buyLuck() {
+      if (tokens >= 50) {
+        tokens -= 50;
+        luckBoost += 10;
+        updateDisplay();
+      } else {
+        alert("Not enough tokens!");
+      }
+    }
+
+    function buyCooldown() {
+      if (tokens >= cooldownCost) {
+        tokens -= cooldownCost;
+        cooldown = Math.max(0, cooldown - 1000);
+        if (cooldown === 0) {
+          alert("You now have no cooldown!");
+        } else {
+          cooldownCost = cooldownCost * 2;
+        }
+        updateDisplay();
+      } else {
+        alert("Not enough tokens!");
+      }
+    }
+
+    function buyRisk() {
+      if (tokens >= 125) {
+        tokens -= 125;
+        const risk = Math.random() < 0.5 ? -Math.floor(tokens / 2) : Math.floor(tokens * 1.5);
+        tokens += risk;
+        alert(risk >= 0 ? `You gained ${risk} tokens!` : `You lost ${Math.abs(risk)} tokens!`);
+        updateDisplay();
+      } else {
+        alert("Not enough tokens!");
+      }
+    }
+
+    function playMood(mood, buttonEl) {
+      const now = Date.now();
+      if (now - lastPlayTime < cooldown) return;
+
+      lastPlayTime = now;
+      buttonEl.classList.add("cooldown");
+      setTimeout(() => buttonEl.classList.remove("cooldown"), cooldown);
+
+      let roll = Math.random() * 100;
+      roll -= luckBoost;
+
+      let totalChance = 0;
+      let rarity = rarities.find(r => {
+        totalChance += r.chance;
+        return roll < totalChance;
+      }) || rarities[0];
+
+      tokens += rarity.tokens;
+
+      const resultText = document.getElementById("resultText");
+      const quoteText = document.getElementById("quoteText");
+
+      resultText.textContent = `You got a ${rarity.name.toUpperCase()}! +${rarity.tokens} tokens`;
+      resultText.style.color = rarity.color;
+
+      quoteText.textContent = quotes[mood][Math.floor(Math.random() * quotes[mood].length)];
+
+      if (rarity.name === 'unreal' || rarity.name === 'insanity') {
+        document.getElementById("game-slide").classList.add("effect-unreal");
+        setTimeout(() => document.getElementById("game-slide").classList.remove("effect-unreal"), 2000);
+      }
+
+      updateDisplay();
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key.toLowerCase() === "m") {
+        toggleShop();
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (['1', '2', '3', '4'].includes(e.key)) {
+        const moods = ['happy', 'sad', 'angry', 'calm'];
+        const mood = moods[parseInt(e.key) - 1];
+        const button = document.querySelector(`.button.${mood}`);
+        if (button) playMood(mood, button);
+      }
+    });
+
+    updateDisplay();
+  </script>
+</body>
+</html>
