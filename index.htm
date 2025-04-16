@@ -21,7 +21,7 @@
       border-radius: 20px;
       padding: 30px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-      max-width: 500px;
+      max-width: 600px;
       width: 100%;
       text-align: center;
       position: relative;
@@ -35,6 +35,12 @@
     .tokens {
       font-size: 22px;
       color: #0066cc;
+      margin-bottom: 10px;
+    }
+
+    .luck-boost {
+      font-size: 16px;
+      color: #888;
       margin-bottom: 20px;
     }
 
@@ -98,38 +104,34 @@
     }
 
     .shop-panel {
-      position: absolute;
-      top: 70px;
-      right: 20px;
-      background: #ffffff;
-      border: 2px solid #0077ff;
-      padding: 20px;
-      border-radius: 12px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(255, 255, 255, 0.95);
+      z-index: 10;
+      padding: 40px;
       display: none;
       flex-direction: column;
-      gap: 15px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-      width: 280px;
+      gap: 20px;
+      overflow-y: auto;
     }
 
     .shop-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 0;
-      border-bottom: 1px solid #ddd;
-      font-size: 16px;
-    }
-
-    .shop-item:last-child {
-      border-bottom: none;
+      padding: 15px;
+      border-bottom: 1px solid #ccc;
+      font-size: 18px;
     }
 
     .shop-item button {
       background: #ffaa00;
-      padding: 8px 14px;
+      padding: 10px 20px;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       color: white;
       font-weight: bold;
       cursor: pointer;
@@ -142,29 +144,33 @@
 </head>
 <body>
   <div class="container">
-    <img src="https://cdn-icons-png.flaticon.com/512/1170/1170678.png" class="shop-icon" onclick="toggleShop()" alt="Shop Icon" />
+    <img src="https://cdn-icons-png.flaticon.com/512/263/263142.png" class="shop-icon" onclick="toggleShop()" alt="Shop Icon" />
 
     <div class="shop-panel" id="shopPanel">
       <div class="shop-item">
-        <span>No Cooldown (450 tokens)</span>
+        <span>No Cooldown (200 tokens)</span>
         <button onclick="buyNoCooldown()">Buy</button>
       </div>
       <div class="shop-item">
-        <span>1.5x Luck (200 tokens)</span>
-        <button onclick="buyLuck(1.5, 200)">Buy</button>
+        <span>1.5x Luck (100 tokens)</span>
+        <button onclick="buyLuck(1.5, 100)">Buy</button>
       </div>
       <div class="shop-item">
-        <span>2x Luck (500 tokens)</span>
-        <button onclick="buyLuck(2, 500)">Buy</button>
+        <span>2x Luck (250 tokens)</span>
+        <button onclick="buyLuck(2, 250)">Buy</button>
       </div>
       <div class="shop-item">
-        <span>4x Luck (1000 tokens)</span>
-        <button onclick="buyLuck(4, 1000)">Buy</button>
+        <span>4x Luck (400 tokens)</span>
+        <button onclick="buyLuck(4, 400)">Buy</button>
+      </div>
+      <div class="shop-item">
+        <button onclick="toggleShop()">Close Shop</button>
       </div>
     </div>
 
     <h1>Mental Gamble</h1>
     <div class="tokens">Tokens: <span id="tokens">1</span></div>
+    <div class="luck-boost">Luck Multiplier: <span id="luckDisplay">1x</span></div>
 
     <div class="mood-buttons">
       <button class="button" onclick="gamble(this, 'happy')">Happy</button>
@@ -194,6 +200,7 @@
     const quoteDisplay = document.getElementById("quote");
     const challengeSection = document.getElementById("challenge");
     const shopPanel = document.getElementById("shopPanel");
+    const luckDisplay = document.getElementById("luckDisplay");
 
     const quotes = {
       happy: "Joy is a net of love by which you can catch souls.",
@@ -204,12 +211,12 @@
     };
 
     const baseChances = [
-      { type: "Common", prob: 0.55, reward: 1 },
-      { type: "Uncommon", prob: 0.25, reward: 2 },
-      { type: "Rare", prob: 0.12, reward: 4 },
-      { type: "Epic", prob: 0.06, reward: 6 },
+      { type: "Common", prob: 0.65, reward: 1 },
+      { type: "Uncommon", prob: 0.2, reward: 2 },
+      { type: "Rare", prob: 0.08, reward: 4 },
+      { type: "Epic", prob: 0.04, reward: 6 },
       { type: "Legendary", prob: 0.015, reward: 10 },
-      { type: "Mythic", prob: 0.005, reward: 20 }
+      { type: "Mythic", prob: 0.005, reward: 25 }
     ];
 
     function updateTokens(val) {
@@ -220,11 +227,12 @@
     }
 
     function getRarity() {
-      let r = Math.random() / luckMultiplier;
-      let sum = 0;
-      for (let i = 0; i < baseChances.length; i++) {
-        sum += baseChances[i].prob;
-        if (r < sum) return baseChances[i];
+      let roll = Math.random();
+      let cumulative = 0;
+      for (const rarity of baseChances) {
+        const adjustedProb = rarity.prob * luckMultiplier;
+        cumulative += adjustedProb;
+        if (roll < cumulative) return rarity;
       }
       return baseChances[0];
     }
@@ -232,10 +240,15 @@
     function gamble(button, mood) {
       if (cooldown && !noCooldown) return;
 
-      const rarity = getRarity();
-      updateTokens(rarity.reward);
-
-      resultDisplay.textContent = `You felt ${mood}. Got a ${rarity.type}! +${rarity.reward} tokens.`;
+      const loseChance = Math.random();
+      if (loseChance < 0.1) {
+        updateTokens(-1);
+        resultDisplay.textContent = `You felt ${mood}. Lost 1 token.`;
+      } else {
+        const rarity = getRarity();
+        updateTokens(rarity.reward);
+        resultDisplay.textContent = `You felt ${mood}. Got a ${rarity.type}! +${rarity.reward} tokens.`;
+      }
       quoteDisplay.textContent = `"${quotes[mood]}"`;
 
       if (!noCooldown) {
@@ -251,22 +264,19 @@
     function challenge() {
       const mode = Math.random();
       if (mode < 0.5) {
-        // Gamble mode
         if (tokens < 5) return alert("Not enough tokens!");
         updateTokens(-5);
-        const win = Math.random() < 0.5;
-        if (win) {
-          updateTokens(3);
-          resultDisplay.textContent = "You survived the challenge and gained 3 tokens!";
-        } else {
-          resultDisplay.textContent = "Challenge failed. You lost your 5 tokens.";
-        }
+        const winRoll = Math.random();
+        if (winRoll < 0.2) updateTokens(200);
+        else if (winRoll < 0.4) updateTokens(150);
+        else if (winRoll < 0.7) updateTokens(100);
+        else updateTokens(90);
+        resultDisplay.textContent = "You took a risk and got rewarded!";
       } else {
-        // Punishment mode
         const outcomes = [-1, -2, -3, -4, -5, -6, -7, -8, -9, -10, Math.floor(-tokens / 2)];
         const penalty = outcomes[Math.floor(Math.random() * outcomes.length)];
         updateTokens(penalty);
-        resultDisplay.textContent = `Uh-oh! Random consequence... You lost ${-penalty} tokens.`;
+        resultDisplay.textContent = `Uh-oh! You lost ${-penalty} tokens.`;
       }
       quoteDisplay.textContent = "";
     }
@@ -276,22 +286,23 @@
     }
 
     function buyNoCooldown() {
-      if (tokens >= 450) {
-        updateTokens(-450);
+      if (tokens >= 200) {
+        updateTokens(-200);
         noCooldown = true;
         alert("No Cooldown unlocked!");
-        shopPanel.style.display = "none";
+        toggleShop();
       } else {
-        alert("You need 450 tokens to buy this!");
+        alert("You need 200 tokens to buy this!");
       }
     }
 
     function buyLuck(multiplier, cost) {
       if (tokens >= cost) {
         updateTokens(-cost);
-        luckMultiplier = multiplier;
-        alert(multiplier + "x Luck Boost activated!");
-        shopPanel.style.display = "none";
+        luckMultiplier *= multiplier;
+        luckDisplay.textContent = luckMultiplier.toFixed(2) + "x";
+        alert(multiplier + "x Luck Boost added!");
+        toggleShop();
       } else {
         alert("Not enough tokens for this boost!");
       }
