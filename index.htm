@@ -1,243 +1,118 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const MoodTrackerApp = () => {
-  const [currentMood, setCurrentMood] = useState(null);
-  const [moodHistory, setMoodHistory] = useState([]);
-  const [motivationalMessage, setMotivationalMessage] = useState('');
-
-  // Mood options
-  const moods = [
-    { id: 'sad', label: 'Sad', color: '#6495ED' },
-    { id: 'neutral', label: 'Neutral', color: '#FFD700' },
-    { id: 'happy', label: 'Happy', color: '#32CD32' },
-    { id: 'angry', label: 'Angry', color: '#FF6347' },
-  ];
-
-  // Motivational messages based on mood
-  const motivationalMessages = {
-    sad: [
-      "It's okay to feel down sometimes. Tomorrow is a new day with new opportunities.",
-      "Even the darkest night will end and the sun will rise again.",
-      "You've overcome difficult times before, and you'll do it again."
-    ],
-    neutral: [
-      "Steady and balanced - a great foundation for growth!",
-      "Sometimes neutral is exactly what we need to reflect and plan.",
-      "Balance in emotions gives you clarity of thought."
-    ],
-    happy: [
-      "Your positive energy is contagious! Keep spreading that joy!",
-      "Happiness looks gorgeous on you! Celebrate this feeling.",
-      "When you're happy, you're at your most creative and productive!"
-    ],
-    angry: [
-      "Your feelings are valid. Take a deep breath and release what doesn't serve you.",
-      "Channel that energy into something constructive - you have power!",
-      "It's okay to feel angry, but remember not to let it control your actions."
-    ]
-  };
-
-  // Load mood history from storage when app starts
-  useEffect(() => {
-    loadMoodHistory();
-  }, []);
-
-  // Save mood to history and storage
-  const saveMood = async (mood) => {
-    const newMoodEntry = {
-      mood: mood,
-      timestamp: new Date().toISOString()
-    };
-    
-    const updatedHistory = [...moodHistory, newMoodEntry];
-    setMoodHistory(updatedHistory);
-    setCurrentMood(mood);
-    
-    // Generate random motivational message based on selected mood
-    const messages = motivationalMessages[mood];
-    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
-    setMotivationalMessage(randomMessage);
-    
-    try {
-      await AsyncStorage.setItem('moodHistory', JSON.stringify(updatedHistory));
-    } catch (error) {
-      console.error('Error saving mood history:', error);
-    }
-  };
-
-  // Load mood history from storage
-  const loadMoodHistory = async () => {
-    try {
-      const storedHistory = await AsyncStorage.getItem('moodHistory');
-      if (storedHistory !== null) {
-        setMoodHistory(JSON.parse(storedHistory));
-      }
-    } catch (error) {
-      console.error('Error loading mood history:', error);
-    }
-  };
-
-  // Calculate mood statistics
-  const calculateStats = () => {
-    if (moodHistory.length === 0) return {};
-    
-    // Get dates only (not time) for counting consecutive days
-    const today = new Date().toISOString().split('T')[0];
-    
-    // Count occurrences of each mood
-    const moodCounts = {};
-    moods.forEach(mood => {
-      moodCounts[mood.id] = moodHistory.filter(entry => entry.mood === mood.id).length;
-    });
-    
-    // Find consecutive days for current mood
-    let consecutiveDays = 0;
-    if (currentMood) {
-      const sortedHistory = [...moodHistory].sort((a, b) => 
-        new Date(b.timestamp) - new Date(a.timestamp)
-      );
-      
-      // Group by date
-      const moodsByDate = {};
-      sortedHistory.forEach(entry => {
-        const date = entry.timestamp.split('T')[0];
-        if (!moodsByDate[date]) moodsByDate[date] = [];
-        moodsByDate[date].push(entry);
-      });
-      
-      // Find most recent mood for each day
-      const dailyMoods = Object.keys(moodsByDate).map(date => {
-        const entries = moodsByDate[date];
-        entries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        return { date, mood: entries[0].mood };
-      });
-      
-      // Count consecutive days with the same mood
-      dailyMoods.sort((a, b) => new Date(b.date) - new Date(a.date));
-      for (let i = 0; i < dailyMoods.length; i++) {
-        if (dailyMoods[i].mood === currentMood) {
-          consecutiveDays++;
-        } else {
-          break;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mental Gambling Health App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
         }
-      }
-    }
-    
-    return {
-      moodCounts,
-      consecutiveDays,
-      totalEntries: moodHistory.length,
-      mostFrequentMood: Object.keys(moodCounts).reduce((a, b) => 
-        moodCounts[a] > moodCounts[b] ? a : b
-      )
+        .button {
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+        }
+        .button:hover {
+            background-color: #e1e1e1;
+        }
+        .mood-buttons {
+            display: flex;
+            justify-content: center;
+            margin: 20px;
+        }
+        .mood-buttons button {
+            margin: 10px;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        .quote {
+            margin-top: 15px;
+            font-style: italic;
+            color: #555;
+        }
+        .tokens {
+            margin-top: 20px;
+            font-size: 22px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Mental Gambling Health App</h1>
+<p>Start with 1 mental token. Choose your mood, and see what you get!</p>
+
+<div class="tokens">
+    Tokens: <span id="tokens">1</span>
+</div>
+
+<div class="mood-buttons">
+    <button class="button" onclick="gamble('happy')">Happy</button>
+    <button class="button" onclick="gamble('sad')">Sad</button>
+    <button class="button" onclick="gamble('angry')">Angry</button>
+    <button class="button" onclick="gamble('anxious')">Anxious</button>
+    <button class="button" onclick="gamble('calm')">Calm</button>
+</div>
+
+<div id="result" class="result"></div>
+<div id="quote" class="quote"></div>
+
+<script>
+    let mentalTokens = 1;
+    const tokenElement = document.getElementById("tokens");
+
+    const quotes = {
+        happy: "Happiness is not something ready-made. It comes from your own actions.",
+        sad: "Sadness may be a temporary feeling, but it can lead to greater understanding.",
+        angry: "Anger is an energy, use it to fuel positive change.",
+        anxious: "The future belongs to those who prepare for it today.",
+        calm: "Calmness is the cradle of power."
     };
-  };
 
-  const stats = calculateStats();
+    const rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary"];
+    
+    function gamble(mood) {
+        const rarity = getRarity();
+        const quote = quotes[mood];
+        const tokensWon = calculateTokens(rarity);
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>How are you feeling today?</Text>
-      
-      <View style={styles.moodContainer}>
-        {moods.map((mood) => (
-          <TouchableOpacity
-            key={mood.id}
-            style={[styles.moodButton, { backgroundColor: mood.color }]}
-            onPress={() => saveMood(mood.id)}
-          >
-            <Text style={styles.moodText}>{mood.label}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-      
-      {currentMood && (
-        <View style={styles.messageContainer}>
-          <Text style={styles.messageTitle}>Your Motivational Message:</Text>
-          <Text style={styles.message}>{motivationalMessage}</Text>
-        </View>
-      )}
-      
-      {moodHistory.length > 0 && (
-        <View style={styles.statsContainer}>
-          <Text style={styles.statsTitle}>Your Mood Stats:</Text>
-          
-          {currentMood && stats.consecutiveDays > 0 && (
-            <Text style={styles.statText}>
-              You've been {currentMood} for {stats.consecutiveDays} day(s)
-            </Text>
-          )}
-          
-          <Text style={styles.statText}>
-            Most frequent mood: {stats.mostFrequentMood} 
-            ({stats.moodCounts[stats.mostFrequentMood]} times)
-          </Text>
-          
-          <Text style={styles.statText}>Total mood entries: {stats.totalEntries}</Text>
-        </View>
-      )}
-    </View>
-  );
-};
+        mentalTokens += tokensWon;
+        tokenElement.innerText = mentalTokens;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#f5f5f5',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  moodContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 30,
-  },
-  moodButton: {
-    padding: 15,
-    borderRadius: 10,
-    width: '22%',
-    alignItems: 'center',
-  },
-  moodText: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
-  messageContainer: {
-    backgroundColor: 'white',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 20,
-  },
-  messageTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  message: {
-    fontSize: 16,
-    fontStyle: 'italic',
-  },
-  statsContainer: {
-    backgroundColor: 'white',
-    padding: 15,
-    borderRadius: 10,
-  },
-  statsTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  statText: {
-    fontSize: 16,
-    marginBottom: 5,
-  },
-});
+        document.getElementById("result").innerText = `You got a ${rarity} result! You won ${tokensWon} tokens.`;
+        document.getElementById("quote").innerText = `"${quote}"`;
+    }
+
+    function getRarity() {
+        const random = Math.random();
+        if (random < 0.2) return rarities[0]; // 20% chance for Common
+        if (random < 0.4) return rarities[1]; // 20% chance for Uncommon
+        if (random < 0.6) return rarities[2]; // 20% chance for Rare
+        if (random < 0.8) return rarities[3]; // 20% chance for Epic
+        return rarities[4]; // 20% chance for Legendary
+    }
+
+    function calculateTokens(rarity) {
+        switch (rarity) {
+            case "Common": return 1;
+            case "Uncommon": return 2;
+            case "Rare": return 3;
+            case "Epic": return 5;
+            case "Legendary": return 10;
+        }
+    }
+</script>
+
+</body>
+</html>
+
 
 export default MoodTrackerApp;
