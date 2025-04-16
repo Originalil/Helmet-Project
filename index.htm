@@ -1,5 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mental Gamble</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(145deg, #e0f7ff, #f0f9ff);
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .slideshow-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      width: 100vw;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      max-width: 600px;
+      text-align: center;
+      position: relative;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .tokens {
+      font-size: 22px;
+      color: #0066cc;
+      margin-bottom: 10px;
+    }
+
+    .luck-boost {
+      font-size: 16px;
+      color: #888;
+      margin-bottom: 20px;
+    }
+
+    .mood-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .button {
+      padding: 20px 28px;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 20px;
+      transition: background 0.2s ease;
+      min-width: 120px;
+    }
+
+    .button.cooldown {
+      background-color: red !important;
+      cursor: not-allowed;
+    }
+
+    .happy { background-color: #4CAF50; }
+    .sad { background-color: #2196F3; }
+    .angry { background-color: orange; }
+    .calm { background-color: #9C27B0; }
+
+    .result {
+      font-size: 18px;
+      margin-top: 10px;
+    }
+
+    .quote {
+      font-style: italic;
+      color: #666;
+      margin-top: 5px;
+    }
+
+    .shop-icon {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 48px;
+      height: 48px;
+      background: url('https://img.icons8.com/ios-filled/50/shop.png') no-repeat center/contain;
+      cursor: pointer;
+    }
+
+    .shop-panel {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(255, 255, 255, 0.95);
+      z-index: 10;
+      padding: 40px;
+      display: none;
+      flex-direction: column;
+      overflow-y: auto;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .shop-panel h2 {
+      margin-bottom: 20px;
+    }
+
+    .shop-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 80%;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 12px;
+      background: #f2f2f2;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      font-size: 18px;
+    }
+    
+    .shop-item .quantity {
+      display: flex;
+      align-items: center;
+    }
+    
+    .shop-item .quantity button {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: none;
+      background: #ddd;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .shop-item .quantity span {
+      margin: 0 10px;
+      font-size: 18px;
+    }
+
+    .shop-item button {
+      background: #ffaa00;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .shop-item button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .shop-item button:hover:enabled {
+      background: #cc8800;
+    }
+
+    .shop-panel .button {
+      background: #444;
+      color: white;
+    }
+
+    .shop-panel .button:hover {
+      background: #222;
+    }
+
+    .take-risk-popup {
+      position: fixed;
+      bottom: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      padding: 20px;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      animation: fadeInUp 0.5s ease-out;
+    }
+
+    .take-risk-popup h3 {
+      margin: 0 0 10px 0;
+      font-size: 20px;
+      color: #333;
+    }
+
+    .take-risk-popup p {
+      margin: 0 0 20px 0;
+      font-size: 16px;
+      color: #666;
+    }
+
+    .take-risk-popup button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      color: white;
+      margin: 5px;
+    }
+
+    .take-risk-popup .accept {
+      background: #4caf50;
+    }
+
+    .take-risk-popup .decline {
+      background: #f44336;
+    }
+
+    .notification {
+      position: fixed;
+      bottom: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+      padding: 15px 25px;
+      font-size: 16px;
+      transition: bottom 0.5s ease;
+      z-index: 100;
+    }
+
+    .notification.success {
+      border-left: 5px solid #4CAF50;
+    }
+
+    .notification.error {
+      border-left: 5px solid #F44336;
+    }
+
+    .notification.info {
+      border-left: 5px solid #2196F3;
+    }
+
+    .token-change {
+      position: absolute;
+      font-weight: bold;
+      font-size: 18px;
+      animation: floatUp 1.5s ease-out forwards;
+      text-shadow: 0px 0px 3px rgba(255, 255, 255, 0.8);
+    }
+
+    /* Slot Machine Styles */
+    .slot-machine-popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: linear-gradient(145deg, #ffd700, #ffb700);
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+      padding: 30px;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      z-index: 100;
+      animation: fadeInScale 0.5s ease-out;
+      width: 90%;
+      max-width: 600px;
+    }
+
+    .slot-machine-popup h2 {
+      margin: 0 0 20px 0;
+      font-size: 28px;
+      color: #333;
+      text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+    }
+
+    .time-remaining {
+      font-size: 18px;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .slots-container {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-bottom: 30px;
+      position: relative;
+    }
+
+    .slot {
+      width: 22%;
+      height: 100px;
+      background: white;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: bold;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .slot-item {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      transition: transform 0.2s ease;
+    }
+
+    .spin-button {
+      padding: 15px 40px;
+      background: #ff6600;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      transition: all 0.2s ease;
+    }
+
+    .spin-button:hover {
+      background: #e65c00;
+      transform: translateY(-2px);
+    }
+
+    .spin-button:active {
+      transform: translateY(1px);
+    }
+
+    .spin-button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .slot-machine-invite {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(to right, #ffdc73, #ffc107);
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      padding: 15px 25px;
+      color: #333;
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+      display: none;
+      z-index: 90;
+      animation: pulse 2s infinite;
+    }
+
+    .slot-machine-invite button {
+      margin-left: 15px;
+      padding: 8px 15px;
+      border: none;
+      border-radius: 8px;
+      background: #ff6600;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.2s ease;
+    }
+
+    .slot-machine-invite button:hover {
+      background: #e65c00;
+    }
+
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7);
+      }
+      70% {
+        box-shadow: 0 0 0 10px rgba(255, 193, 7, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
+      }
+    }
+
+    @keyframes fadeInScale {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+    }
+
+    @keyframes floatUp {
+      0% { 
+        opacity: 0;
+        transform: translateY(0);
+      }
+      20% { 
+        opacity: 1;
+      }
+      80% { 
+        opacity: 1;
+      }
+      100% { 
+        opacity: 0;
+        transform: translateY(-50px);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .shimmer {
+      background: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.8) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      background-size: 200% 100%;
+      animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -100% 0; }
+      100% { background-position: 200% 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="slideshow-container">
+    <div class="container slide active" id="game-slide">
+      <h1>Mental Gamble</h1>
+      <div class="tokens" id="tokenCount">Tokens: 0</div>
+      <div class="luck-boost" id="luckDisplay">Luck Boost: 0%</div>
+      <div class="mood-buttons">
+        <button class="button happy" onclick="playMood('happy', this)">Happy</button>
+        <button class="button sad" onclick="playMood('sad', this)">Sad</button>
+        <button class="button angry" onclick="playMood('angry', this)">Angry</button>
+        <button class="button calm" onclick="playMood('calm', this)">Calm</button>
+      </div>
+      <div class="result" id="resultText"></div>
+      <div class="quote" id="quoteText"></div>
+      <div class="shop-icon" onclick="toggleShop()"></div>
+    </div>
+
+    <div class="shop-panel" id="shop">
+      <h2>Shop</h2>
+      <div class="shop-item">
+        <span>+10% Luck Boost (50 tokens)</span>
+        <div class="quantity">
+          <button onclick="changeLuckQuantity(-1)">-</button>
+          <span id="luckQuantity">1</span>
+          <button onclick="changeLuckQuantity(1)">+</button>
+        </div>
+        <button id="luckButton" onclick="buyLuck()">Buy</button>
+      </div>
+      <div class="shop-item">
+        <span id="cooldownCostText">Reduce Cooldown by 1s (50 tokens)</span>
+        <div class="quantity">
+          <button onclick="changeCooldownQuantity(-1)">-</button>
+          <span id="cooldownQuantity">1</span>
+          <button onclick="changeCooldownQuantity(1)">+</button>
+        </div>
+        <button id="cooldownButton" onclick="buyCooldown()">Buy</button>
+      </div>
+      <button class="button" onclick="toggleShop()">Close Shop</button>
+    </div>
+
+    <div class="take-risk-popup" id="takeRiskPopup">
+      <h3>Take a Risk?</h3>
+      <p>You could gain or lose tokens. Do you want to proceed?</p>
+      <button class="accept" onclick="acceptRisk()">Accept</button>
+      <button class="decline" onclick="declineRisk()">Decline</button>
+    </div>
+  </div>
+
+  <!-- Slot Machine Invitation -->
+  <div class="slot-machine-invite" id="slotMachineInvite">
+    Join slot machine mode?
+    <button onclick="startSlotMachine()">Join</button>
+  </div>
+
+  <!-- Slot Machine Popup -->
+  <div class="slot-machine-popup" id="slotMachinePopup">
+    <h2>Slot Machine Mode</h2>
+    <div class="time-remaining" id="slotTimeRemaining">Time: 60s</div>
+    <div class="slots-container">
+      <div class="slot" id="slot1"></div>
+      <div class="slot" id="slot2"></div>
+      <div class="slot" id="slot3"></div>
+      <div class="slot" id="slot4"></div>
+    </div>
+    <button class="spin-button" id="spinButton" onclick="spinSlots()">SPIN</button>
+  </div>
+
+  <div class="notification" id="notification"></div>
+
   <script>
-    /* Rest of the JavaScript logic */
+    let tokens = 0;
+    let luckBoost = 0;
+    let cooldown = 5000;
+    let cooldownCost = 50;
+    let lastPlayTime = 0;
+    let luckQuantity = 1;
+    let cooldownQuantity = 1;
+    let slotMachineTimer = null;
+    let slotMachineTimeRemaining = 60;
+    let isSpinning = false;
+    let lastSlotMachineTime = 0;
+
+    const moods = ['happy', 'sad', 'angry', 'calm'];
+    const moodColors = {
+      'happy': '#4CAF50',
+      'sad': '#2196F3',
+      'angry': 'orange',
+      'calm': '#9C27B0'
+    };
+
+    const rarities = [
+      { name: 'common', chance: 50, color: '#bbb', tokens: 5 },
+      { name: 'rare', chance: 30, color: '#3399ff', tokens: 15 },
+      { name: 'epic', chance: 12, color: '#9933ff', tokens: 30 },
+      { name: 'legendary', chance: 5, color: '#ff9900', tokens: 100 },
+      { name: 'insanity', chance: 3, color: '#ff0055', tokens: 250 }
+    ];
+
+    const quotes = {
+      happy: ["Joy sparks more chances!", "Smile brings fortune!"],
+      sad: ["Tough days teach us the most.", "Even sadness can bloom hope."],
+      angry: ["Turn anger into action!", "Fury fuels fortune!"],
+      calm: ["Peace clears your path.", "Still waters run deep."]
+    };
+
+    function updateDisplay() {
+      document.getElementById("tokenCount").textContent = `Tokens: ${tokens}`;
+      document.getElementById("luckDisplay").textContent = `Luck Boost: ${luckBoost}%`;
+      document.getElementById("cooldownCostText").textContent = `Reduce Cooldown by 1s (${cooldownCost} tokens)`;
+      document.getElementById("luckQuantity").textContent = luckQuantity;
+      document.getElementById("cooldownQuantity").textContent = cooldownQuantity;
+
+      const luckButton = document.getElementById("luckButton");
+      luckButton.disabled = tokens < (50 * luckQuantity);
+
+      const cooldownButton = document.getElementById("cooldownButton");
+      cooldownButton.disabled = tokens < (cooldownCost * cooldownQuantity);
+
+      // Show risk popup randomly
+      const takeRiskPopup = document.getElementById("takeRiskPopup");
+      if (tokens >= 15 && Math.random() < 0.2 && !isSlotMachineActive()) {
+        takeRiskPopup.style.display = "flex";
+      } else {
+        takeRiskPopup.style.display = "none";
+      }
+      
+      // Randomly show slot machine invitation (5% chance every 30 seconds)
+      const now = Date.now();
+      if (tokens >= 20 && now - lastSlotMachineTime > 30000 && Math.random() < 0.05 && !isSlotMachineActive()) {
+        showSlotMachineInvite();
+      }
+    }
+
+    function isSlotMachineActive() {
+      return document.getElementById("slotMachinePopup").style.display === "flex";
+    }
+
+    function showSlotMachineInvite() {
+      document.getElementById("slotMachineInvite").style.display = "block";
+      setTimeout(() => {
+        document.getElementById("slotMachineInvite").style.display = "none";
+      }, 10000); // Invitation disappears after 10 seconds
+    }
+
+    function startSlotMachine() {
+      document.getElementById("slotMachineInvite").style.display = "none";
+      document.getElementById("slotMachinePopup").style.display = "flex";
+      slotMachineTimeRemaining = 60;
+      document.getElementById("slotTimeRemaining").textContent = `Time: ${slotMachineTimeRemaining}s`;
+      
+      // Initialize slots
+      initializeSlots();
+      
+      // Start countdown timer
+      slotMachineTimer = setInterval(() => {
+        slotMachineTimeRemaining--;
+        document.getElementById("slotTimeRemaining").textContent = `Time: ${slotMachineTimeRemaining}s`;
+        
+        if (slotMachineTimeRemaining <= 0) {
+          endSlotMachine();
+        }
+      }, 1000);
+      
+      lastSlotMachineTime = Date.now();
+    }
+
+    function endSlotMachine() {
+      clearInterval(slotMachineTimer);
+      document.getElementById("slotMachinePopup").style.display = "none";
+      showNotification("Slot Machine Mode ended!", "info");
+    }
+
     function initializeSlots() {
       for (let i = 1; i <= 4; i++) {
         const slot = document.getElementById(`slot${i}`);
@@ -78,6 +713,43 @@
       });
     }
 
+    function checkSlotResults(selectedMoods) {
+      // Check if all moods are the same
+      const allSame = selectedMoods.every(mood => mood === selectedMoods[0]);
+      
+      if (allSame) {
+        // Double tokens if all moods match
+        const reward = tokens;
+        tokens += reward;
+        showTokenChange(reward);
+        showNotification(`JACKPOT! All ${selectedMoods[0]}! You doubled your tokens! +${reward}`, "success");
+      } else {
+        // Check how many unique moods
+        const uniqueMoods = [...new Set(selectedMoods)];
+        
+        if (uniqueMoods.length === 2) {
+          // Two pairs
+          const reward = Math.floor(tokens * 0.5);
+          tokens += reward;
+          showTokenChange(reward);
+          showNotification(`Good! You got two pairs! +${reward} tokens`, "success");
+        } else if (uniqueMoods.length === 3) {
+          // One pair
+          const reward = Math.floor(tokens * 0.2);
+          tokens += reward;
+          showTokenChange(reward);
+          showNotification(`Nice! You got a pair! +${reward} tokens`, "info");
+        } else {
+          // All different
+          showNotification("Try again! No matches this time.", "error");
+        }
+      }
+      
+      isSpinning = false;
+      document.getElementById("spinButton").disabled = false;
+      updateDisplay();
+    }
+
     function toggleShop() {
       const shop = document.getElementById("shop");
       shop.style.display = shop.style.display === "flex" ? "none" : "flex";
@@ -134,6 +806,54 @@
       }, 1500);
     }
 
+    function showNotification(message, type = "info") {
+      const notification = document.getElementById("notification");
+      notification.textContent = message;
+      notification.className = "notification " + type;
+      notification.style.bottom = "20px";
+      
+      setTimeout(() => {
+        notification.style.bottom = "-100px";
+      }, 3000);
+    }
+
+    function playMood(mood, buttonEl) {
+      if (isSlotMachineActive()) return;
+      
+      const now = Date.now();
+      if (now - lastPlayTime < cooldown) return;
+
+      lastPlayTime = now;
+      buttonEl.classList.add("cooldown");
+      setTimeout(() => buttonEl.classList.remove("cooldown"), cooldown);
+
+      let roll = Math.random() * 100;
+      roll -= luckBoost;
+
+      let totalChance = 0;
+      let rarity = rarities.find(r => {
+        totalChance += r.chance;
+        return roll < totalChance;
+      }) || rarities[0];
+
+      if (Math.random() < 0.3) {
+        const loss = Math.floor(tokens * 0.1); // Lose 10% of current tokens
+        tokens -= loss;
+        showTokenChange(-loss);
+        document.getElementById("resultText").textContent = `You lost ${loss} tokens!`;
+        document.getElementById("resultText").style.color = "#F44336";
+      } else {
+        tokens += rarity.tokens;
+        showTokenChange(rarity.tokens);
+        document.getElementById("resultText").textContent = `You got a ${rarity.name.toUpperCase()}! +${rarity.tokens} tokens`;
+        document.getElementById("resultText").style.color = rarity.color;
+      }
+
+      document.getElementById("quoteText").textContent = quotes[mood][Math.floor(Math.random() * quotes[mood].length)];
+
+      updateDisplay();
+    }
+
     function acceptRisk() {
       const risk = Math.random() < 0.5 ? -Math.floor(tokens / 2) : Math.floor(tokens * 1.5);
       tokens += risk;
@@ -164,5 +884,3 @@
     // Periodic updates
     setInterval(updateDisplay, 10000);
   </script>
-</body>
-</html>
