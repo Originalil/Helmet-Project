@@ -10,10 +10,6 @@
       background: linear-gradient(145deg, #e0f7ff, #f0f9ff);
       margin: 0;
       padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
     }
 
     .container {
@@ -22,7 +18,7 @@
       padding: 30px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
       max-width: 600px;
-      width: 100%;
+      margin: 50px auto;
       text-align: center;
       position: relative;
     }
@@ -109,12 +105,11 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(255, 255, 255, 0.95);
+      background: white;
       z-index: 10;
       padding: 40px;
       display: none;
       flex-direction: column;
-      gap: 20px;
       overflow-y: auto;
     }
 
@@ -152,16 +147,20 @@
         <button onclick="buyNoCooldown()">Buy</button>
       </div>
       <div class="shop-item">
-        <span>1.5x Luck (100 tokens)</span>
-        <button onclick="buyLuck(1.5, 100)">Buy</button>
+        <span>1.5x Luck (75 tokens)</span>
+        <button onclick="buyLuck(1.5, 75)">Buy</button>
       </div>
       <div class="shop-item">
-        <span>2x Luck (250 tokens)</span>
-        <button onclick="buyLuck(2, 250)">Buy</button>
+        <span>2x Luck (150 tokens)</span>
+        <button onclick="buyLuck(2, 150)">Buy</button>
       </div>
       <div class="shop-item">
-        <span>4x Luck (400 tokens)</span>
-        <button onclick="buyLuck(4, 400)">Buy</button>
+        <span>4x Luck (300 tokens)</span>
+        <button onclick="buyLuck(4, 300)">Buy</button>
+      </div>
+      <div class="shop-item">
+        <span>Golden Quote (random 5–200 bonus)</span>
+        <button onclick="buyGoldenQuote()">Buy</button>
       </div>
       <div class="shop-item">
         <button onclick="toggleShop()">Close Shop</button>
@@ -211,12 +210,13 @@
     };
 
     const baseChances = [
-      { type: "Common", prob: 0.65, reward: 1 },
+      { type: "Common", prob: 0.5, reward: 1 },
       { type: "Uncommon", prob: 0.2, reward: 2 },
-      { type: "Rare", prob: 0.08, reward: 4 },
-      { type: "Epic", prob: 0.04, reward: 6 },
-      { type: "Legendary", prob: 0.015, reward: 10 },
-      { type: "Mythic", prob: 0.005, reward: 25 }
+      { type: "Rare", prob: 0.12, reward: 4 },
+      { type: "Epic", prob: 0.07, reward: 6 },
+      { type: "Legendary", prob: 0.03, reward: 10 },
+      { type: "Mythic", prob: 0.015, reward: 30 },
+      { type: "Unreal", prob: 0.005, reward: 100 }
     ];
 
     function updateTokens(val) {
@@ -227,14 +227,19 @@
     }
 
     function getRarity() {
-      let roll = Math.random();
-      let cumulative = 0;
-      for (const rarity of baseChances) {
-        const adjustedProb = rarity.prob * luckMultiplier;
-        cumulative += adjustedProb;
-        if (roll < cumulative) return rarity;
+      let totalWeight = 0;
+      const adjusted = baseChances.map(r => {
+        const weight = r.prob * luckMultiplier;
+        totalWeight += weight;
+        return { ...r, weight };
+      });
+
+      let roll = Math.random() * totalWeight;
+      for (const rarity of adjusted) {
+        if (roll < rarity.weight) return rarity;
+        roll -= rarity.weight;
       }
-      return baseChances[0];
+      return adjusted[0];
     }
 
     function gamble(button, mood) {
@@ -263,13 +268,13 @@
 
     function challenge() {
       const mode = Math.random();
-      if (mode < 0.5) {
+      if (mode < 0.4) {
         if (tokens < 5) return alert("Not enough tokens!");
         updateTokens(-5);
         const winRoll = Math.random();
         if (winRoll < 0.2) updateTokens(200);
         else if (winRoll < 0.4) updateTokens(150);
-        else if (winRoll < 0.7) updateTokens(100);
+        else if (winRoll < 0.6) updateTokens(100);
         else updateTokens(90);
         resultDisplay.textContent = "You took a risk and got rewarded!";
       } else {
@@ -306,6 +311,14 @@
       } else {
         alert("Not enough tokens for this boost!");
       }
+    }
+
+    function buyGoldenQuote() {
+      const bonus = Math.floor(Math.random() * 196) + 5;
+      updateTokens(bonus);
+      resultDisplay.textContent = `Golden quote added ${bonus} tokens.`;
+      quoteDisplay.textContent = `"Good thought."`;
+      toggleShop();
     }
   </script>
 </body>
