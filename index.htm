@@ -165,44 +165,61 @@
       background: #222;
     }
 
-    .take-risk {
-      position: absolute;
-      bottom: 20px;
+    .take-risk-popup {
+      position: fixed;
+      bottom: 10%;
       left: 50%;
       transform: translateX(-50%);
-      background: #ff0055;
-      color: white;
-      padding: 15px 30px;
-      font-size: 18px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      padding: 20px;
       display: none;
-      animation: popup 0.5s ease-out;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      animation: fadeInUp 0.5s ease-out;
     }
 
-    .take-risk:hover {
-      background: #c90044;
+    .take-risk-popup h3 {
+      margin: 0 0 10px 0;
+      font-size: 20px;
+      color: #333;
     }
 
-    @keyframes popup {
+    .take-risk-popup p {
+      margin: 0 0 20px 0;
+      font-size: 16px;
+      color: #666;
+    }
+
+    .take-risk-popup button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      color: white;
+      margin: 5px;
+    }
+
+    .take-risk-popup .accept {
+      background: #4caf50;
+    }
+
+    .take-risk-popup .decline {
+      background: #f44336;
+    }
+
+    @keyframes fadeInUp {
       from {
-        transform: translateX(-50%) translateY(10px);
         opacity: 0;
+        transform: translateY(20px);
       }
       to {
-        transform: translateX(-50%) translateY(0);
         opacity: 1;
+        transform: translateY(0);
       }
-    }
-
-    .effect-unreal {
-      animation: glow 1s infinite alternate;
-    }
-
-    @keyframes glow {
-      0% { box-shadow: 0 0 10px #ff0; }
-      100% { box-shadow: 0 0 20px #f0f; }
     }
   </style>
 </head>
@@ -221,7 +238,6 @@
       <div class="result" id="resultText"></div>
       <div class="quote" id="quoteText"></div>
       <div class="shop-icon" onclick="toggleShop()"></div>
-      <button class="take-risk" id="takeRiskButton" onclick="takeRisk()">Take a Risk?</button>
     </div>
 
     <div class="shop-panel" id="shop">
@@ -231,10 +247,17 @@
         <button onclick="buyLuck()">Buy</button>
       </div>
       <div class="shop-item">
-        <span>Reduce Cooldown by 1s (50 tokens, then increases)</span>
+        <span id="cooldownCostText">Reduce Cooldown by 1s (50 tokens)</span>
         <button id="cooldownButton" onclick="buyCooldown()" disabled>Buy</button>
       </div>
       <button class="button" onclick="toggleShop()">Close Shop</button>
+    </div>
+
+    <div class="take-risk-popup" id="takeRiskPopup">
+      <h3>Take a Risk?</h3>
+      <p>You could gain or lose tokens. Do you want to proceed?</p>
+      <button class="accept" onclick="acceptRisk()">Accept</button>
+      <button class="decline" onclick="declineRisk()">Decline</button>
     </div>
   </div>
 
@@ -246,22 +269,34 @@
     let lastPlayTime = 0;
 
     const rarities = [
-      { name: 'common', chance: 50, color: '#bbb', tokens: 5, canLose: true },
-      { name: 'rare', chance: 30, color: '#3399ff', tokens: 15, canLose: true },
-      { name: 'epic', chance: 12, color: '#9933ff', tokens: 30, canLose: false },
-      { name: 'legendary', chance: 5, color: '#ff9900', tokens: 100, canLose: false },
-      { name: 'insanity', chance: 3, color: '#ff0055', tokens: 250, canLose: false }
+      { name: 'common', chance: 50, color: '#bbb', tokens: 5 },
+      { name: 'rare', chance: 30, color: '#3399ff', tokens: 15 },
+      { name: 'epic', chance: 12, color: '#9933ff', tokens: 30 },
+      { name: 'legendary', chance: 5, color: '#ff9900', tokens: 100 },
+      { name: 'insanity', chance: 3, color: '#ff0055', tokens: 250 }
     ];
+
+    const quotes = {
+      happy: ["Joy sparks more chances!", "Smile brings fortune!"],
+      sad: ["Tough days teach us the most.", "Even sadness can bloom hope."],
+      angry: ["Turn anger into action!", "Fury fuels fortune!"],
+      calm: ["Peace clears your path.", "Still waters run deep."]
+    };
 
     function updateDisplay() {
       document.getElementById("tokenCount").textContent = `Tokens: ${tokens}`;
       document.getElementById("luckDisplay").textContent = `Luck Boost: ${luckBoost}%`;
+      document.getElementById("cooldownCostText").textContent = `Reduce Cooldown by 1s (${cooldownCost} tokens)`;
 
       const cooldownButton = document.getElementById("cooldownButton");
       cooldownButton.disabled = tokens < cooldownCost;
 
-      const takeRiskButton = document.getElementById("takeRiskButton");
-      takeRiskButton.style.display = tokens >= 15 && Math.random() < 0.2 ? "block" : "none";
+      const takeRiskPopup = document.getElementById("takeRiskPopup");
+      if (tokens >= 15 && Math.random() < 0.2) {
+        takeRiskPopup.style.display = "flex";
+      } else {
+        takeRiskPopup.style.display = "none";
+      }
     }
 
     function toggleShop() {
@@ -283,20 +318,9 @@
       if (tokens >= cooldownCost) {
         tokens -= cooldownCost;
         cooldown = Math.max(0, cooldown - 1000);
-        if (cooldown === 0) {
-          alert("You now have no cooldown!");
-        } else {
-          cooldownCost *= 2;
-        }
+        cooldownCost *= 2;
         updateDisplay();
       }
-    }
-
-    function takeRisk() {
-      const risk = Math.random() < 0.5 ? -Math.floor(tokens / 2) : Math.floor(tokens * 1.5);
-      tokens += risk;
-      alert(risk >= 0 ? `You gained ${risk} tokens!` : `You lost ${Math.abs(risk)} tokens!`);
-      updateDisplay();
     }
 
     function playMood(mood, buttonEl) {
@@ -316,14 +340,32 @@
         return roll < totalChance;
       }) || rarities[0];
 
-      if (rarity.canLose && Math.random() < 0.3) {
-        tokens -= rarity.tokens;
-        alert(`You lost ${rarity.tokens} tokens!`);
+      if (Math.random() < 0.3) {
+        const loss = Math.floor(tokens * 0.1); // Lose 10% of current tokens
+        tokens -= loss;
+        alert(`You lost ${loss} tokens!`);
       } else {
         tokens += rarity.tokens;
       }
 
+      document.getElementById("resultText").textContent = `You got a ${rarity.name.toUpperCase()}! +${rarity.tokens} tokens`;
+      document.getElementById("resultText").style.color = rarity.color;
+
+      document.getElementById("quoteText").textContent = quotes[mood][Math.floor(Math.random() * quotes[mood].length)];
+
       updateDisplay();
+    }
+
+    function acceptRisk() {
+      const risk = Math.random() < 0.5 ? -Math.floor(tokens / 2) : Math.floor(tokens * 1.5);
+      tokens += risk;
+      alert(risk >= 0 ? `You gained ${risk} tokens!` : `You lost ${Math.abs(risk)} tokens!`);
+      document.getElementById("takeRiskPopup").style.display = "none";
+      updateDisplay();
+    }
+
+    function declineRisk() {
+      document.getElementById("takeRiskPopup").style.display = "none";
     }
 
     updateDisplay();
