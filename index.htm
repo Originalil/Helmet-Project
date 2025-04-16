@@ -119,20 +119,30 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: white;
+      background: rgba(255, 255, 255, 0.95);
       z-index: 10;
       padding: 40px;
       display: none;
       flex-direction: column;
       overflow-y: auto;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .shop-panel h2 {
+      margin-bottom: 20px;
     }
 
     .shop-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      width: 80%;
       padding: 15px;
-      border-bottom: 1px solid #ccc;
+      margin: 10px 0;
+      border-radius: 12px;
+      background: #f2f2f2;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       font-size: 18px;
     }
 
@@ -176,219 +186,114 @@
   </style>
 </head>
 <body>
-  <div class="slideshow-container" id="slideshow">
-    <div class="container slide active" id="gameSlide">
-      <img src="https://cdn-icons-png.flaticon.com/512/263/263142.png" class="shop-icon" onclick="toggleShop()" alt="Shop Icon" />
-
-      <div class="shop-panel" id="shopPanel">
-        <div class="shop-item">
-          <span>Cooldown Reduction (100 tokens)</span>
-          <button onclick="buyCooldown()">Buy</button>
-        </div>
-        <div class="shop-item">
-          <span>1.5x Luck (200 tokens)</span>
-          <button onclick="buyLuck(1.5, 200)">Buy</button>
-        </div>
-        <div class="shop-item">
-          <span>2x Luck (400 tokens)</span>
-          <button onclick="buyLuck(2, 400)">Buy</button>
-        </div>
-        <div class="shop-item">
-          <span>4x Luck (800 tokens)</span>
-          <button onclick="buyLuck(4, 800)">Buy</button>
-        </div>
-        <div class="shop-item">
-          <span>Golden Quote (random 10–300 bonus)</span>
-          <button onclick="buyGoldenQuote()">Buy</button>
-        </div>
-        <div class="shop-item">
-          <button onclick="toggleShop()">Close Shop</button>
-        </div>
-      </div>
-
+ 
+  <div class="slideshow-container">
+    <div class="container slide active" id="game-slide">
       <h1>Mental Gamble</h1>
-      <div class="tokens">Tokens: <span id="tokens">1</span></div>
-      <div class="luck-boost">Luck Multiplier: <span id="luckDisplay">1x</span></div>
-
+      <div class="tokens" id="tokenCount">Tokens: 100</div>
+      <div class="luck-boost" id="luckDisplay">Luck Boost: 0%</div>
       <div class="mood-buttons">
-        <button class="button" onclick="gamble(this, 'happy')">Happy</button>
-        <button class="button" onclick="gamble(this, 'sad')">Sad</button>
-        <button class="button" onclick="gamble(this, 'angry')">Angry</button>
-        <button class="button" onclick="gamble(this, 'anxious')">Anxious</button>
-        <button class="button" onclick="gamble(this, 'calm')">Calm</button>
+        <button class="button" onclick="gamble()">Gamble</button>
       </div>
-
-      <div id="result" class="result"></div>
-      <div id="quote" class="quote"></div>
-
-      <div class="challenge-section" id="challenge">
-        <div class="challenge-info">Challenge Mode Unlocked!</div>
-        <button class="button" onclick="challenge()">Take a Risk</button>
-      </div>
+      <div class="result" id="resultText"></div>
+      <div class="quote" id="quoteText"></div>
+      <div class="shop-icon" onclick="toggleShop()">🛒</div>
     </div>
 
-    <div class="container slide" id="secondSlide">
-      <h2>Welcome to the Mental Gamble Game!</h2>
-      <p>This is an interactive, fun-filled token system game where you will make choices based on different moods.</p>
-      <p>Feel free to gamble your tokens, unlock special items, and face new challenges. Will you win big or lose it all? Time will tell!</p>
-      <button class="button" onclick="nextSlide()">Start Playing</button>
-    </div>
-
-    <div class="nav-buttons">
-      <button class="nav-button" onclick="prevSlide()">Previous</button>
-      <button class="nav-button" onclick="nextSlide()">Next</button>
+    <div class="shop-panel" id="shop">
+      <h2>Shop</h2>
+      <div class="shop-item">
+        <span>+10% Luck Boost (50 tokens)</span>
+        <button onclick="buyLuck()">Buy</button>
+      </div>
+      <div class="shop-item">
+        <span>Reduce Cooldown by 1s (100 tokens)</span>
+        <button onclick="buyCooldown()">Buy</button>
+      </div>
+      <button class="button" onclick="toggleShop()">Close Shop</button>
     </div>
   </div>
 
   <script>
-    let tokens = 1;
-    let cooldown = false;
-    let cooldownTime = 5000; // 5 seconds
-    let noCooldown = false;
-    let luckMultiplier = 1;
-    let purchasedItems = [];
+    let tokens = 100;
+    let luckBoost = 0;
+    let cooldown = 5000; // 5 seconds
+    let lastGambleTime = 0;
 
-    const tokenDisplay = document.getElementById("tokens");
-    const resultDisplay = document.getElementById("result");
-    const quoteDisplay = document.getElementById("quote");
-    const challengeSection = document.getElementById("challenge");
-    const shopPanel = document.getElementById("shopPanel");
+    const resultText = document.getElementById("resultText");
+    const quoteText = document.getElementById("quoteText");
+    const tokenCount = document.getElementById("tokenCount");
     const luckDisplay = document.getElementById("luckDisplay");
-    const slideshow = document.getElementById("slideshow");
 
     const quotes = {
-      happy: "Joy is a net of love by which you can catch souls.",
-      sad: "Tears come from the heart, not the brain.",
-      angry: "Anger is one letter short of danger.",
-      anxious: "You don't have to control your thoughts. You just have to stop letting them control you.",
-      calm: "The nearer a man comes to a calm mind, the closer he is to strength."
+      common: "Keep trying. Every effort counts.",
+      rare: "Nice! You're doing well!",
+      epic: "Epic win! You're on fire!",
+      legendary: "Legendary moment! You're unstoppable!"
     };
 
-    const baseChances = [
-      { type: "Common", prob: 0.5, reward: 1 },
-      { type: "Uncommon", prob: 0.15, reward: 2 },
-      { type: "Rare", prob: 0.1, reward: 5 },
-      { type: "Epic", prob: 0.08, reward: 7 },
-      { type: "Legendary", prob: 0.05, reward: 10 },
-      { type: "Mythic", prob: 0.02, reward: 20 },
-      { type: "Unreal", prob: 0.01, reward: 50 }
-    ];
-
-    function updateTokens(val) {
-      tokens += val;
-      if (tokens < 0) tokens = 0;
-      tokenDisplay.textContent = tokens;
-      challengeSection.style.display = tokens >= 10 ? "flex" : "none";
-    }
-
-    function getRarity() {
-      let totalWeight = 0;
-      const adjusted = baseChances.map(r => {
-        const weight = r.prob * luckMultiplier;
-        totalWeight += weight;
-        return { ...r, weight };
-      });
-
-      let roll = Math.random() * totalWeight;
-      for (const rarity of adjusted) {
-        if (roll < rarity.weight) return rarity;
-        roll -= rarity.weight;
-      }
-      return adjusted[0];
-    }
-
-    function gamble(button, mood) {
-      if (cooldown) return;
-
-      const loseChance = Math.random();
-      if (loseChance < 0.1) {
-        updateTokens(-1);
-        resultDisplay.textContent = `You felt ${mood}. Lost 1 token.`;
-      } else {
-        const rarity = getRarity();
-        updateTokens(rarity.reward);
-        resultDisplay.textContent = `You felt ${mood}. Got a ${rarity.type}! +${rarity.reward} tokens.`;
-      }
-      quoteDisplay.textContent = `"${quotes[mood]}"`;
-
-      cooldown = true;
-      button.classList.add("cooldown");
-      setTimeout(() => {
-        cooldown = false;
-        button.classList.remove("cooldown");
-      }, cooldownTime);
-    }
-
-    function challenge() {
-      const mode = Math.random();
-      if (mode < 0.4) {
-        if (tokens < 5) return alert("Not enough tokens!");
-        updateTokens(-5);
-        const winRoll = Math.random();
-        if (winRoll < 0.2) updateTokens(200);
-        else if (winRoll < 0.4) updateTokens(150);
-        else if (winRoll < 0.6) updateTokens(100);
-        else updateTokens(90);
-        resultDisplay.textContent = "You took a risk and got rewarded!";
-      } else {
-        const outcomes = [-1, -2, -3, -4, -5, -6, -7, -8, -9, -10, Math.floor(-tokens / 2)];
-        const penalty = outcomes[Math.floor(Math.random() * outcomes.length)];
-        updateTokens(penalty);
-        resultDisplay.textContent = `Uh-oh! You lost ${-penalty} tokens.`;
-      }
-      quoteDisplay.textContent = "";
+    function updateDisplay() {
+      tokenCount.textContent = `Tokens: ${tokens}`;
+      luckDisplay.textContent = `Luck Boost: ${luckBoost}%`;
     }
 
     function toggleShop() {
-      shopPanel.style.display = shopPanel.style.display === "flex" ? "none" : "flex";
+      const shop = document.getElementById("shop");
+      shop.style.display = shop.style.display === "flex" ? "none" : "flex";
+    }
+
+    function buyLuck() {
+      if (tokens >= 50) {
+        tokens -= 50;
+        luckBoost += 10;
+        updateDisplay();
+      } else {
+        alert("Not enough tokens!");
+      }
     }
 
     function buyCooldown() {
-      if (tokens >= 100) {
-        updateTokens(-100);
-        cooldownTime = 1000; // 1 second cooldown
-        alert("Cooldown reduced to 1 second!");
-        toggleShop();
+      if (tokens >= 100 && cooldown > 1000) {
+        tokens -= 100;
+        cooldown -= 1000;
+        updateDisplay();
+      } else if (cooldown <= 1000) {
+        alert("Cooldown can't go lower than 1 second!");
       } else {
-        alert("You need 100 tokens to buy this!");
+        alert("Not enough tokens!");
       }
     }
 
-    function buyLuck(multiplier, cost) {
-      if (tokens >= cost) {
-        updateTokens(-cost);
-        luckMultiplier *= multiplier;
-        luckDisplay.textContent = luckMultiplier.toFixed(2) + "x";
-        alert(multiplier + "x Luck Boost added!");
-        toggleShop();
-      } else {
-        alert("Not enough tokens for this boost!");
+    function getRarity() {
+      let roll = Math.random() * 100;
+      let adjustedRoll = roll - (luckBoost * 0.5);
+
+      if (adjustedRoll < 50) return "common";
+      if (adjustedRoll < 80) return "rare";
+      if (adjustedRoll < 95) return "epic";
+      return "legendary";
+    }
+
+    function gamble() {
+      let now = Date.now();
+      if (now - lastGambleTime < cooldown) {
+        resultText.textContent = "Wait for cooldown!";
+        return;
       }
+
+      lastGambleTime = now;
+
+      let rarity = getRarity();
+      let earnings = { common: 5, rare: 15, epic: 30, legendary: 100 }[rarity];
+      tokens += earnings;
+
+      resultText.textContent = `You got a ${rarity.toUpperCase()}! +${earnings} tokens`;
+      quoteText.textContent = quotes[rarity];
+      updateDisplay();
     }
 
-    function buyGoldenQuote() {
-      const bonus = Math.floor(Math.random() * 290) + 10;
-      updateTokens(bonus);
-      resultDisplay.textContent = `Golden quote added ${bonus} tokens.`;
-      quoteDisplay.textContent = `"Good thought."`;
-      toggleShop();
-    }
-
-    function nextSlide() {
-      let activeSlide = document.querySelector(".slide.active");
-      let nextSlide = activeSlide.nextElementSibling;
-      if (!nextSlide) nextSlide = document.querySelector(".slide:first-child");
-      activeSlide.classList.remove("active");
-      nextSlide.classList.add("active");
-    }
-
-    function prevSlide() {
-      let activeSlide = document.querySelector(".slide.active");
-      let prevSlide = activeSlide.previousElementSibling;
-      if (!prevSlide) prevSlide = document.querySelector(".slide:last-child");
-      activeSlide.classList.remove("active");
-      prevSlide.classList.add("active");
-    }
+    updateDisplay();
   </script>
 </body>
 </html>
+ 
