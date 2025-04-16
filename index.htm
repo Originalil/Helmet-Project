@@ -54,33 +54,34 @@
       margin-bottom: 20px;
     }
 
-    .mood-buttons, .challenge-section {
+    .mood-buttons {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 10px;
+      gap: 15px;
       margin-bottom: 20px;
     }
 
     .button {
-      padding: 12px 20px;
-      background: #0077ff;
+      padding: 20px 28px;
       color: white;
       border: none;
       border-radius: 10px;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 20px;
       transition: background 0.2s ease;
-    }
-
-    .button:hover {
-      background: #005fcc;
+      min-width: 120px;
     }
 
     .button.cooldown {
-      background-color: #ff4444 !important;
+      background-color: red !important;
       cursor: not-allowed;
     }
+
+    .happy { background-color: #4CAF50; }
+    .sad { background-color: #2196F3; }
+    .angry { background-color: orange; }
+    .calm { background-color: #9C27B0; }
 
     .result {
       font-size: 18px;
@@ -97,8 +98,9 @@
       position: absolute;
       top: 20px;
       right: 20px;
-      width: 36px;
-      height: 36px;
+      width: 48px;
+      height: 48px;
+      background: url('https://img.icons8.com/ios-filled/50/shop.png') no-repeat center/contain;
       cursor: pointer;
     }
 
@@ -108,7 +110,7 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(255, 255, 255, 0.97);
+      background: rgba(255, 255, 255, 0.95);
       z-index: 10;
       padding: 40px;
       display: none;
@@ -130,13 +132,13 @@
       padding: 15px;
       margin: 10px 0;
       border-radius: 12px;
-      background: #e3f2fd;
+      background: #f2f2f2;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       font-size: 18px;
     }
 
     .shop-item button {
-      background: #ffa000;
+      background: #ffaa00;
       padding: 10px 20px;
       border: none;
       border-radius: 8px;
@@ -146,28 +148,34 @@
     }
 
     .shop-item button:hover {
-      background: #ff8f00;
+      background: #cc8800;
     }
 
-    .rarity-common { color: #888; }
-    .rarity-rare { color: #4a90e2; }
-    .rarity-epic { color: #9c27b0; }
-    .rarity-legendary { color: #f57c00; }
-    .rarity-insanity { color: #d50000; font-weight: bold; }
+    .effect-unreal {
+      animation: glow 1s infinite alternate;
+    }
+
+    @keyframes glow {
+      0% { box-shadow: 0 0 10px #ff0; }
+      100% { box-shadow: 0 0 20px #f0f; }
+    }
   </style>
 </head>
 <body>
   <div class="slideshow-container">
-    <div class="container" id="game-slide">
+    <div class="container slide active" id="game-slide">
       <h1>Mental Gamble</h1>
       <div class="tokens" id="tokenCount">Tokens: 100</div>
       <div class="luck-boost" id="luckDisplay">Luck Boost: 0%</div>
       <div class="mood-buttons">
-        <button class="button" onclick="gamble()">Gamble</button>
+        <button class="button happy" onclick="playMood('happy', this)">Happy</button>
+        <button class="button sad" onclick="playMood('sad', this)">Sad</button>
+        <button class="button angry" onclick="playMood('angry', this)">Angry</button>
+        <button class="button calm" onclick="playMood('calm', this)">Calm</button>
       </div>
       <div class="result" id="resultText"></div>
       <div class="quote" id="quoteText"></div>
-      <div class="shop-icon" onclick="toggleShop()">🛒</div>
+      <div class="shop-icon" onclick="toggleShop()"></div>
     </div>
 
     <div class="shop-panel" id="shop">
@@ -187,27 +195,27 @@
   <script>
     let tokens = 100;
     let luckBoost = 0;
-    let cooldown = 5000;
-    let lastGambleTime = 0;
-    let lastRiskTime = 0;
-    let riskCooldown = 15000;
-
-    const resultText = document.getElementById("resultText");
-    const quoteText = document.getElementById("quoteText");
-    const tokenCount = document.getElementById("tokenCount");
-    const luckDisplay = document.getElementById("luckDisplay");
+    let cooldown = 3500;
+    let lastPlayTime = 0;
 
     const quotes = {
-      common: "Keep trying. Every effort counts.",
-      rare: "Nice! You're doing well!",
-      epic: "Epic win! You're on fire!",
-      legendary: "Legendary moment! You're unstoppable!",
-      insanity: "INSANE! Reality bent in your favor!"
+      happy: ["Joy sparks more chances!", "Smile brings fortune!"],
+      sad: ["Tough days teach us the most.", "Even sadness can bloom hope."],
+      angry: ["Turn anger into action!", "Fury fuels fortune!"],
+      calm: ["Peace clears your path.", "Still waters run deep."]
     };
 
+    const rarities = [
+      { name: 'common', chance: 50, color: '#bbb', tokens: 5 },
+      { name: 'rare', chance: 30, color: '#3399ff', tokens: 15 },
+      { name: 'epic', chance: 14, color: '#9933ff', tokens: 30 },
+      { name: 'legendary', chance: 5, color: '#ff9900', tokens: 100 },
+      { name: 'insanity', chance: 1, color: '#ff0055', tokens: 250 }
+    ];
+
     function updateDisplay() {
-      tokenCount.textContent = `Tokens: ${tokens}`;
-      luckDisplay.textContent = `Luck Boost: ${luckBoost}%`;
+      document.getElementById("tokenCount").textContent = `Tokens: ${tokens}`;
+      document.getElementById("luckDisplay").textContent = `Luck Boost: ${luckBoost}%`;
     }
 
     function toggleShop() {
@@ -226,59 +234,49 @@
     }
 
     function buyCooldown() {
-      if (tokens >= 100 && cooldown > 1000) {
+      if (tokens >= 100 && cooldown > 1500) {
         tokens -= 100;
         cooldown -= 1000;
         updateDisplay();
-      } else if (cooldown <= 1000) {
-        alert("Cooldown can't go lower than 1 second!");
+      } else if (cooldown <= 1500) {
+        alert("Cooldown can't go lower than 1.5 seconds!");
       } else {
         alert("Not enough tokens!");
       }
     }
 
-    function getRarity() {
+    function playMood(mood, buttonEl) {
+      const now = Date.now();
+      if (now - lastPlayTime < cooldown) return;
+
+      lastPlayTime = now;
+      buttonEl.classList.add("cooldown");
+      setTimeout(() => buttonEl.classList.remove("cooldown"), cooldown);
+
       let roll = Math.random() * 100;
-      let adjustedRoll = roll - (luckBoost * 0.5);
+      roll -= (luckBoost * 0.5);
 
-      if (adjustedRoll < 40) return "common";
-      if (adjustedRoll < 75) return "rare";
-      if (adjustedRoll < 93) return "epic";
-      if (adjustedRoll < 99) return "legendary";
-      return "insanity";
-    }
+      let totalChance = 0;
+      let rarity = rarities.find(r => {
+        totalChance += r.chance;
+        return roll < totalChance;
+      }) || rarities[0];
 
-    function gamble() {
-      let now = Date.now();
-      if (now - lastGambleTime < cooldown) {
-        resultText.textContent = "Wait for cooldown!";
-        return;
-      }
-      lastGambleTime = now;
+      tokens += rarity.tokens;
 
-      // Risk check
-      let riskChance = Math.random();
-      if (riskChance < 0.1 && now - lastRiskTime > riskCooldown) {
-        lastRiskTime = now;
-        let riskLoss = Math.floor(tokens * (Math.random() * 0.25 + 0.1));
-        tokens = Math.max(0, tokens - riskLoss);
-        resultText.innerHTML = `⚠️ <span style="color: #c00;">Risk occurred! You lost ${riskLoss} tokens.</span>`;
-        updateDisplay();
-        return;
+      const resultText = document.getElementById("resultText");
+      const quoteText = document.getElementById("quoteText");
+
+      resultText.textContent = `You got a ${rarity.name.toUpperCase()}! +${rarity.tokens} tokens`;
+      resultText.style.color = rarity.color;
+
+      quoteText.textContent = quotes[mood][Math.floor(Math.random() * quotes[mood].length)];
+
+      if (rarity.name === 'insanity') {
+        document.getElementById("game-slide").classList.add("effect-unreal");
+        setTimeout(() => document.getElementById("game-slide").classList.remove("effect-unreal"), 2000);
       }
 
-      let rarity = getRarity();
-      let earnings = {
-        common: 5,
-        rare: 15,
-        epic: 30,
-        legendary: 100,
-        insanity: 300
-      }[rarity];
-
-      tokens += earnings;
-      resultText.innerHTML = `You got a <span class="rarity-${rarity}">${rarity.toUpperCase()}</span>! +${earnings} tokens`;
-      quoteText.textContent = quotes[rarity];
       updateDisplay();
     }
 
@@ -287,4 +285,3 @@
 </body>
 </html>
 
- 
