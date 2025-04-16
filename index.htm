@@ -1,225 +1,243 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Eco Guard</title>
-  <meta name="description" content="Eco Guard is a 100% natural, sustainable, and compostable helmet made with bamboo, cork, cotton, and plant-based resin. Learn how it protects both your head and the environment.">
-  <meta name="author" content="Ayaan Farooq, Harrison Vesey">
-  <meta name="keywords" content="eco helmet, sustainable helmet, natural materials, compostable, bamboo helmet, cork padding, green technology, helmet design">
-  <meta name="robots" content="index, follow">
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #e8f5e9;
-      color: #333;
-      margin: 0;
-      padding: 0;
-      scroll-behavior: smooth;
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const MoodTrackerApp = () => {
+  const [currentMood, setCurrentMood] = useState(null);
+  const [moodHistory, setMoodHistory] = useState([]);
+  const [motivationalMessage, setMotivationalMessage] = useState('');
+
+  // Mood options
+  const moods = [
+    { id: 'sad', label: 'Sad', color: '#6495ED' },
+    { id: 'neutral', label: 'Neutral', color: '#FFD700' },
+    { id: 'happy', label: 'Happy', color: '#32CD32' },
+    { id: 'angry', label: 'Angry', color: '#FF6347' },
+  ];
+
+  // Motivational messages based on mood
+  const motivationalMessages = {
+    sad: [
+      "It's okay to feel down sometimes. Tomorrow is a new day with new opportunities.",
+      "Even the darkest night will end and the sun will rise again.",
+      "You've overcome difficult times before, and you'll do it again."
+    ],
+    neutral: [
+      "Steady and balanced - a great foundation for growth!",
+      "Sometimes neutral is exactly what we need to reflect and plan.",
+      "Balance in emotions gives you clarity of thought."
+    ],
+    happy: [
+      "Your positive energy is contagious! Keep spreading that joy!",
+      "Happiness looks gorgeous on you! Celebrate this feeling.",
+      "When you're happy, you're at your most creative and productive!"
+    ],
+    angry: [
+      "Your feelings are valid. Take a deep breath and release what doesn't serve you.",
+      "Channel that energy into something constructive - you have power!",
+      "It's okay to feel angry, but remember not to let it control your actions."
+    ]
+  };
+
+  // Load mood history from storage when app starts
+  useEffect(() => {
+    loadMoodHistory();
+  }, []);
+
+  // Save mood to history and storage
+  const saveMood = async (mood) => {
+    const newMoodEntry = {
+      mood: mood,
+      timestamp: new Date().toISOString()
+    };
+    
+    const updatedHistory = [...moodHistory, newMoodEntry];
+    setMoodHistory(updatedHistory);
+    setCurrentMood(mood);
+    
+    // Generate random motivational message based on selected mood
+    const messages = motivationalMessages[mood];
+    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+    setMotivationalMessage(randomMessage);
+    
+    try {
+      await AsyncStorage.setItem('moodHistory', JSON.stringify(updatedHistory));
+    } catch (error) {
+      console.error('Error saving mood history:', error);
     }
-    header {
-      background: linear-gradient(135deg, #2e7d32, #66bb6a);
-      color: white;
-      padding: 2rem 1rem;
-      text-align: center;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  };
+
+  // Load mood history from storage
+  const loadMoodHistory = async () => {
+    try {
+      const storedHistory = await AsyncStorage.getItem('moodHistory');
+      if (storedHistory !== null) {
+        setMoodHistory(JSON.parse(storedHistory));
+      }
+    } catch (error) {
+      console.error('Error loading mood history:', error);
     }
-    nav {
-      background-color: #1b5e20;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 0.75rem;
-      padding: 0.75rem 0.5rem;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    }
-    nav a {
-      color: white;
-      text-decoration: none;
-      padding: 0.6rem 1.2rem;
-      border-radius: 25px;
-      background-color: #2e7d32;
-      font-weight: bold;
-      transition: all 0.3s ease;
-    }
-    nav a:hover {
-      background-color: #43a047;
-      transform: scale(1.05);
-    }
-    section {
-      padding: 2rem;
-      display: none;
-      animation: fadeIn 0.6s ease-in-out forwards;
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    section.active {
-      display: block;
-      opacity: 1;
-      transform: translateY(0);
-    }
-    @keyframes fadeIn {
-      to {
-        opacity: 1;
-        transform: translateY(0);
+  };
+
+  // Calculate mood statistics
+  const calculateStats = () => {
+    if (moodHistory.length === 0) return {};
+    
+    // Get dates only (not time) for counting consecutive days
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Count occurrences of each mood
+    const moodCounts = {};
+    moods.forEach(mood => {
+      moodCounts[mood.id] = moodHistory.filter(entry => entry.mood === mood.id).length;
+    });
+    
+    // Find consecutive days for current mood
+    let consecutiveDays = 0;
+    if (currentMood) {
+      const sortedHistory = [...moodHistory].sort((a, b) => 
+        new Date(b.timestamp) - new Date(a.timestamp)
+      );
+      
+      // Group by date
+      const moodsByDate = {};
+      sortedHistory.forEach(entry => {
+        const date = entry.timestamp.split('T')[0];
+        if (!moodsByDate[date]) moodsByDate[date] = [];
+        moodsByDate[date].push(entry);
+      });
+      
+      // Find most recent mood for each day
+      const dailyMoods = Object.keys(moodsByDate).map(date => {
+        const entries = moodsByDate[date];
+        entries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        return { date, mood: entries[0].mood };
+      });
+      
+      // Count consecutive days with the same mood
+      dailyMoods.sort((a, b) => new Date(b.date) - new Date(a.date));
+      for (let i = 0; i < dailyMoods.length; i++) {
+        if (dailyMoods[i].mood === currentMood) {
+          consecutiveDays++;
+        } else {
+          break;
+        }
       }
     }
-    h1, h2 {
-      margin-bottom: 1rem;
-    }
-    .card {
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      padding: 1.5rem;
-      margin-bottom: 2rem;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 6px 18px rgba(0,0,0,0.15);
-    }
-    ul {
-      padding-left: 1.25rem;
-    }
-    ul li {
-      margin-bottom: 0.5rem;
-    }
-    .fun-fact {
-      font-style: italic;
-      background-color: #c8e6c9;
-      padding: 1rem;
-      border-radius: 12px;
-      margin-top: 1rem;
-    }
-    .tab-indicator {
-      width: 100%;
-      height: 5px;
-      background: linear-gradient(to right, #66bb6a, #2e7d32);
-      margin-top: -5px;
-      animation: move 2s linear infinite;
-    }
-    @keyframes move {
-      0% { background-position: 0% 50%; }
-      100% { background-position: 100% 50%; }
-    }
-    .tooltip {
-      display: inline-block;
-      position: relative;
-      cursor: help;
-    }
-    .tooltip:hover::after {
-      content: attr(data-tooltip);
-      position: absolute;
-      background: #333;
-      color: #fff;
-      padding: 6px 8px;
-      border-radius: 8px;
-      top: -35px;
-      white-space: nowrap;
-      font-size: 0.85rem;
-    }
-    .icon {
-      margin-right: 0.5rem;
-    }
-    .glow {
-      animation: glow 2s ease-in-out infinite alternate;
-    }
-    @keyframes glow {
-      from { text-shadow: 0 0 5px #a5d6a7, 0 0 10px #81c784; }
-      to { text-shadow: 0 0 20px #66bb6a, 0 0 30px #388e3c; }
-    }
-    .card i {
-      color: #4caf50;
-      margin-right: 0.5rem;
-    }
-    .alert-box {
-      position: fixed;
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: #81c784;
-      color: #1b5e20;
-      padding: 1rem 1.5rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-      font-weight: bold;
-      animation: fadeInUp 1s ease forwards;
-    }
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
-</head>
-<body>
-  <header>
-    <h1 class="glow">Eco Guard</h1>
-    <p>Our priority is not you, it's the helmet.</p>
-    <div class="tab-indicator"></div>
-  </header>
+    
+    return {
+      moodCounts,
+      consecutiveDays,
+      totalEntries: moodHistory.length,
+      mostFrequentMood: Object.keys(moodCounts).reduce((a, b) => 
+        moodCounts[a] > moodCounts[b] ? a : b
+      )
+    };
+  };
 
-  <nav>
-    <a href="#" onclick="showSection('helmet')"><i class="fas fa-hard-hat icon"></i>Helmet Info</a>
-    <a href="#" onclick="showSection('materials')"><i class="fas fa-leaf icon"></i>Materials</a>
-    <a href="#" onclick="showSection('why')"><i class="fas fa-check icon"></i>Why Us</a>
-    <a href="#" onclick="showSection('creators')"><i class="fas fa-users icon"></i>Creators</a>
-  </nav>
+  const stats = calculateStats();
 
-  <section id="helmet" class="active">
-    <div class="card">
-      <h2>Helmet Info</h2>
-      <p> N/A </p>
-      <p> N/A </p>
-      <div dclass="fun-fact">🌱 <em>Fun Fact: cork can actually bounce back to shape after its squished or compressed, which is useful for helmets</em></div>
-    </div>
-  </section>
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>How are you feeling today?</Text>
+      
+      <View style={styles.moodContainer}>
+        {moods.map((mood) => (
+          <TouchableOpacity
+            key={mood.id}
+            style={[styles.moodButton, { backgroundColor: mood.color }]}
+            onPress={() => saveMood(mood.id)}
+          >
+            <Text style={styles.moodText}>{mood.label}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+      
+      {currentMood && (
+        <View style={styles.messageContainer}>
+          <Text style={styles.messageTitle}>Your Motivational Message:</Text>
+          <Text style={styles.message}>{motivationalMessage}</Text>
+        </View>
+      )}
+      
+      {moodHistory.length > 0 && (
+        <View style={styles.statsContainer}>
+          <Text style={styles.statsTitle}>Your Mood Stats:</Text>
+          
+          {currentMood && stats.consecutiveDays > 0 && (
+            <Text style={styles.statText}>
+              You've been {currentMood} for {stats.consecutiveDays} day(s)
+            </Text>
+          )}
+          
+          <Text style={styles.statText}>
+            Most frequent mood: {stats.mostFrequentMood} 
+            ({stats.moodCounts[stats.mostFrequentMood]} times)
+          </Text>
+          
+          <Text style={styles.statText}>Total mood entries: {stats.totalEntries}</Text>
+        </View>
+      )}
+    </View>
+  );
+};
 
-  <section id="materials">
-    <div class="card">
-      <h2>Materials</h2>
-        <li><strong>Bamboo Fiber Shell:</strong> This is the outer layer of the helmet, Bamboo is super strong and grows really fast, making it easy to produce and perfect for protection.</li>
-        <li><strong>Cork Foam Padding:</strong> This padding goes inside the helmet to absorb any impact, cork is soft and bouncy. It comes from the bark of cork oak trees, mostly found in places like Portugal.</li>
-        <li><strong>Organic Cotton Lining:</strong> This is the soft layer that touches your head, It's really comfy for your head. Organic cotton is grown without chemicals .</li>
-        <li><strong>Plant Based Resin:</strong> This is basically a natural glue, it holds all the parts of the helmet together. It’s made from stuff like pine sap and can be obtained from therex.</li>
-    </div>
-  </section>
-  <section id="why">
-    <div class="card">
-      <h2>Why Choose Eco Guard?</h2>
-      <ul>
-        <li class="tooltip" data-tooltip="N/A>N/A</li>
-        <li class="tooltip" data-tooltip="N/A">N/A</li>
-        <li class="tooltip" data-tooltip="N/A">N/A</li>
-        <li class="tooltip" data-tooltip="N/A">N/A</li>
-      </ul>
-    </div>
-  </section>
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#f5f5f5',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  moodContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 30,
+  },
+  moodButton: {
+    padding: 15,
+    borderRadius: 10,
+    width: '22%',
+    alignItems: 'center',
+  },
+  moodText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  messageContainer: {
+    backgroundColor: 'white',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  messageTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  message: {
+    fontSize: 16,
+    fontStyle: 'italic',
+  },
+  statsContainer: {
+    backgroundColor: 'white',
+    padding: 15,
+    borderRadius: 10,
+  },
+  statsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  statText: {
+    fontSize: 16,
+    marginBottom: 5,
+  },
+});
 
-  <section id="creators">
-    <div class="card">
-      <h2>Creators</h2>
-      <p>This project was made by:</p>
-      <ul>
-        <li><strong>Ayaan Farooq</strong></li>
-        <li><strong>Harrison Vesey</strong></li>
-      </ul>
-    </div>
-  </section>
-
-  <div class="alert-box">2025 Stem Project</div>
-
-  <script>
-    function showSection(id) {
-      const sections = document.querySelectorAll('section');
-      sections.forEach(section => section.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-    }
-  </script>
-</body>
-</html>
+export default MoodTrackerApp;
