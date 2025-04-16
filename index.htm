@@ -188,6 +188,10 @@
         <span>Reduce Cooldown by 1s (100 tokens)</span>
         <button onclick="buyCooldown()">Buy</button>
       </div>
+      <div class="shop-item">
+        <span>Reset Tokens to 100 (Free)</span>
+        <button onclick="resetTokens()">Reset</button>
+      </div>
       <button class="button" onclick="toggleShop()">Close Shop</button>
     </div>
   </div>
@@ -243,6 +247,11 @@
       } else {
         alert("Not enough tokens!");
       }
+    }
+
+    function resetTokens() {
+      tokens = 100;
+      updateDisplay();
     }
 
     function playMood(mood, buttonEl) {
