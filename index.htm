@@ -1,927 +1,841 @@
+  
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mental Gambling</title>
+    <title>Sol's Aura Roller</title>
     <style>
+        :root {
+            --common-color: #aaaaaa;
+            --uncommon-color: #55ff55;
+            --rare-color: #5555ff;
+            --epic-color: #aa00aa;
+            --legendary-color: #ffaa00;
+            --mythic-color: #ff5555;
+            --cosmic-color: #aa00ff;
+            --divine-color: #ffffff;
+        }
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #121212;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
-        }
-
-        .game-container {
-            width: 100%;
-            max-width: 800px;
-            text-align: center;
-            position: relative;
-        }
-
-        .title {
-            font-size: 36px;
-            margin-bottom: 10px;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-        }
-        
-        .tagline {
-            font-size: 18px;
-            margin-bottom: 40px;
-            color: #aaa;
-            font-style: italic;
-        }
-
-        #gambleButton {
-            background: linear-gradient(135deg, #1e9600, #fff200, #ff0000);
-            border: none;
-            color: white;
-            padding: 20px 60px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 24px;
-            margin: 20px 0;
-            cursor: pointer;
-            border-radius: 50px;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            font-weight: bold;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        #gambleButton:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-        }
-
-        #gambleButton:disabled {
-            background: #333;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-
-        .modal-overlay.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .modal-content {
-            background-color: #1e1e1e;
-            width: 90%;
-            max-width: 700px;
-            border-radius: 15px;
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
-            padding: 30px;
-            position: relative;
-            transform: scale(0.8);
-            transition: transform 0.3s ease;
-        }
-
-        .modal-overlay.active .modal-content {
-            transform: scale(1);
-        }
-
-        .close-button {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            font-size: 24px;
-            color: #aaa;
-            cursor: pointer;
-            background: none;
-            border: none;
-            outline: none;
-        }
-
-        .close-button:hover {
-            color: white;
-        }
-
-        .reel-container {
-            position: relative;
-            height: 120px;
-            background-color: #252525;
-            overflow: hidden;
-            margin: 30px 0;
-            border-radius: 10px;
-            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.7);
-        }
-
-        .center-marker {
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            height: 100%;
-            width: 4px;
-            z-index: 10;
-            background-color: rgba(255, 255, 255, 0.5);
-            pointer-events: none;
-        }
-
-        .reel {
-            position: absolute;
-            display: flex;
-            transition: transform 4s cubic-bezier(0.15, 0.9, 0.3, 1);
-            height: 100%;
-            left: -5000px; /* Start far off to the left */
-        }
-
-        .rarity-item {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            width: 180px;
-            height: 100%;
-            margin-right: 10px;
-            font-weight: bold;
-            font-size: 22px;
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .rarity-item.enlarged {
-            transform: scale(1.2);
-            z-index: 15;
-            box-shadow: 0 0 25px rgba(255, 255, 255, 0.5);
-        }
-
-        .rarity-percentage {
-            font-size: 14px;
-            margin-top: 5px;
-            opacity: 0.8;
-        }
-
-        .common {
-            background: linear-gradient(145deg, #656565, #757575);
+            background-color: #111;
             color: #eee;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background-image: radial-gradient(circle at center, #222, #000);
         }
-
-        .uncommon {
-            background: linear-gradient(145deg, #388E3C, #4CAF50);
-            color: #fff;
+        
+        .container {
+            width: 90%;
+            max-width: 800px;
         }
-
-        .rare {
-            background: linear-gradient(145deg, #1976D2, #2196F3);
-            color: #fff;
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
         }
-
-        .epic {
-            background: linear-gradient(145deg, #7B1FA2, #9C27B0);
-            color: #fff;
+        
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(to right, #ffaa00, #ff5555, #aa00ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(255, 170, 0, 0.3);
         }
-
-        .legendary {
-            background: linear-gradient(145deg, #FFA000, #FFC107);
-            color: #000;
+        
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
-
-        .result-container {
-            height: 60px;
-            font-size: 28px;
-            font-weight: bold;
+        
+        .roll-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+        }
+        
+        .aura-display {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-top: 20px;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
-        }
-
-        .cooldown-progress {
-            width: 100%;
-            height: 6px;
-            background-color: #333;
-            border-radius: 3px;
-            margin-top: 20px;
-            overflow: hidden;
+            margin: 20px;
+            background-color: rgba(0, 0, 0, 0.5);
             position: relative;
-        }
-
-        .cooldown-bar {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(to right, #ff9800, #f44336);
-            transition: width linear;
-            border-radius: 3px;
-        }
-
-        .timer {
-            font-size: 16px;
-            color: #aaa;
-            margin-top: 10px;
-        }
-
-        .shine {
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 50%;
-            height: 100%;
-            background: linear-gradient(
-                to right, 
-                rgba(255, 255, 255, 0) 0%,
-                rgba(255, 255, 255, 0.2) 50%,
-                rgba(255, 255, 255, 0) 100%
-            );
-            transform: skewX(-25deg);
-        }
-
-        .highlight {
-            animation: highlight-pulse 1s infinite;
-            box-shadow: 0 0 20px;
-        }
-
-        @keyframes highlight-pulse {
-            0% { box-shadow: 0 0 15px; }
-            50% { box-shadow: 0 0 30px; }
-            100% { box-shadow: 0 0 15px; }
-        }
-
-        @keyframes shine-effect {
-            0% { left: -100%; }
-            100% { left: 200%; }
-        }
-
-        .shine-animation {
-            animation: shine-effect 2s infinite;
-        }
-
-        .glow-text {
-            text-shadow: 0 0 10px;
+            overflow: hidden;
+            transition: all 0.5s ease;
         }
         
-        .action-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 20px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
+        .aura-display.rolling {
+            animation: rotate 1s ease-in-out;
+        }
+        
+        @keyframes rotate {
+            0% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.2) rotate(180deg); }
+            100% { transform: scale(1) rotate(360deg); }
+        }
+        
+        .aura-glow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            filter: blur(15px);
+            opacity: 0.7;
+            z-index: 1;
+        }
+        
+        .aura-info {
+            z-index: 2;
+            text-align: center;
+            font-weight: bold;
             pointer-events: none;
         }
         
-        .action-buttons.visible {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        
-        .action-button {
-            padding: 12px 30px;
-            border-radius: 30px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: none;
-            text-transform: uppercase;
-            font-size: 16px;
-        }
-        
-        .equip-button {
-            background: linear-gradient(to right, #4CAF50, #8BC34A);
-            color: white;
-        }
-        
-        .equip-button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
-        }
-        
-        .skip-button {
-            background: #424242;
-            color: #ddd;
-        }
-        
-        .skip-button:hover {
-            transform: scale(1.05);
-            background: #616161;
-        }
-        
-        .equipped-title {
-            margin-top: 30px;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            font-size: 20px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .equipped-title.visible {
-            opacity: 1;
-        }
-        
-        .player-info {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px 20px;
-            border-radius: 10px;
-            text-align: right;
-            max-width: 300px;
-        }
-        
-        .player-title {
-            font-weight: bold;
-            font-size: 18px;
+        .aura-name {
+            font-size: 1.5rem;
             margin-bottom: 5px;
         }
-
-        /* Sound toggle button */
-        .sound-toggle {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px;
-            border-radius: 50%;
+        
+        .aura-rarity {
+            font-size: 1rem;
+        }
+        
+        .common { color: var(--common-color); text-shadow: 0 0 5px var(--common-color); }
+        .uncommon { color: var(--uncommon-color); text-shadow: 0 0 5px var(--uncommon-color); }
+        .rare { color: var(--rare-color); text-shadow: 0 0 5px var(--rare-color); }
+        .epic { color: var(--epic-color); text-shadow: 0 0 5px var(--epic-color); }
+        .legendary { color: var(--legendary-color); text-shadow: 0 0 5px var(--legendary-color); }
+        .mythic { color: var(--mythic-color); text-shadow: 0 0 5px var(--mythic-color); }
+        .cosmic { color: var(--cosmic-color); text-shadow: 0 0 5px var(--cosmic-color); }
+        .divine { color: var(--divine-color); text-shadow: 0 0 5px var(--divine-color); }
+        
+        .roll-button {
+            background: linear-gradient(to right, #ffaa00, #aa00ff);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.5rem;
+            border-radius: 30px;
             cursor: pointer;
-            font-size: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 20px 0;
+            box-shadow: 0 0 10px rgba(255, 170, 0, 0.5);
+        }
+        
+        .roll-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(255, 170, 0, 0.7);
+        }
+        
+        .roll-button:active {
+            transform: translateY(1px);
+        }
+        
+        .luck-meter {
+            width: 100%;
+            height: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            margin: 10px 0;
+            position: relative;
+        }
+        
+        .luck-fill {
+            height: 100%;
+            border-radius: 5px;
+            background: linear-gradient(to right, #55ff55, #ffaa00, #ff5555);
+            transition: width 0.3s ease;
+        }
+        
+        .stats-luck-section {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .stats-panel, .luck-panel {
+            flex: 1;
+            padding: 15px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+        }
+        
+        .panel-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 5px;
+        }
+        
+        .inventory-section {
+            padding: 15px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+        }
+        
+        .inventory-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        
+        .inventory-item {
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .inventory-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+        
+        .inv-aura-glow {
             width: 40px;
             height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
+            border-radius: 50%;
+            margin-bottom: 5px;
+            filter: blur(5px);
         }
-
-        .sound-toggle:hover {
-            background: rgba(255, 255, 255, 0.2);
+        
+        .inv-count {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        
+        .rarity-badge {
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            margin-top: 5px;
+        }
+        
+        .sort-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .sort-button {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: none;
+            padding: 3px 8px;
+            border-radius: 5px;
+            color: #ddd;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        
+        .sort-button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            opacity: 0.7;
+            font-size: 0.8rem;
+        }
+        
+        @media (max-width: 600px) {
+            .stats-luck-section {
+                flex-direction: column;
+            }
+            
+            .inventory-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
         }
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <div class="title">Mental Gambling</div>
-        <div class="tagline">Gamble your time, and mentality</div>
-        <button id="gambleButton">GAMBLE</button>
-    </div>
-    
-    <div class="player-info" id="playerInfo">
-        <div>Current Title:</div>
-        <div class="player-title" id="currentTitle">None</div>
-    </div>
-
-    <div class="modal-overlay" id="modal">
-        <div class="modal-content">
-            <button class="close-button" id="closeModal">×</button>
-            
-            <div class="reel-container">
-                <div class="center-marker"></div>
-                <div class="reel" id="reel"></div>
+    <div class="container">
+        <header>
+            <h1>Sol's Aura Roller</h1>
+            <p>Click roll to discover mystical auras from across the cosmos</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="roll-section">
+                <div class="aura-display">
+                    <div class="aura-glow"></div>
+                    <div class="aura-info">
+                        <div class="aura-name">???</div>
+                        <div class="aura-rarity">No Aura</div>
+                    </div>
+                </div>
+                <button class="roll-button" id="roll-button">Roll</button>
             </div>
             
-            <div class="result-container" id="result">
-                Ready to gamble...
+            <div class="stats-luck-section">
+                <div class="stats-panel">
+                    <div class="panel-title">Stats</div>
+                    <div id="total-rolls">Total Rolls: 0</div>
+                    <div id="rarest-aura">Rarest Aura: None</div>
+                    <div id="unique-auras">Unique Auras: 0/60</div>
+                </div>
+                
+                <div class="luck-panel">
+                    <div class="panel-title">Luck System</div>
+                    <div>Luck Level: <span id="luck-level">0</span></div>
+                    <div>Pity Points: <span id="pity-points">0</span>/<span id="pity-max">100</span></div>
+                    <div class="luck-meter">
+                        <div class="luck-fill" style="width: 0%"></div>
+                    </div>
+                    <div id="luck-effect">Current Effect: None</div>
+                </div>
             </div>
             
-            <div class="action-buttons" id="actionButtons">
-                <button class="action-button equip-button" id="equipButton">Equip</button>
-                <button class="action-button skip-button" id="skipButton">Skip</button>
+            <div class="inventory-section">
+                <div class="inventory-title">
+                    <div>Aura Collection</div>
+                    <div class="sort-buttons">
+                        <button class="sort-button" data-sort="name">Name</button>
+                        <button class="sort-button" data-sort="rarity">Rarity</button>
+                        <button class="sort-button" data-sort="count">Count</button>
+                    </div>
+                </div>
+                <div class="inventory-grid" id="inventory-grid">
+                    <!-- Inventory items will be added here -->
+                </div>
             </div>
-            
-            <div class="equipped-title" id="equippedTitle"></div>
-            
-            <div class="cooldown-progress">
-                <div class="cooldown-bar" id="cooldownBar"></div>
-            </div>
-            <div class="timer" id="timer"></div>
         </div>
+        
+        <footer>
+            <p>© 2025 Sol's Aura Roller | Seek the Divine light!</p>
+        </footer>
     </div>
-
-    <div class="sound-toggle" id="soundToggle">🔊</div>
-
-    <!-- Audio elements -->
-    <audio id="spinSound" preload="auto">
-        <source src="https://assets.mixkit.co/active_storage/sfx/361/361-preview.mp3" type="audio/mpeg">
-    </audio>
-    <audio id="tickSound" preload="auto">
-        <source src="https://assets.mixkit.co/active_storage/sfx/270/270-preview.mp3" type="audio/mpeg">
-    </audio>
-    <audio id="commonSound" preload="auto">
-        <source src="https://assets.mixkit.co/active_storage/sfx/209/209-preview.mp3" type="audio/mpeg">
-    </audio>
-    <audio id="uncommonSound" preload="auto">
-        <source src="https://assets.mixkit.co/active_storage/sfx/220/220-preview.mp3" type="audio/mpeg">
-    </audio>
-    <audio id="rareSound" preload="auto">
-        <source src="https://assets.mixkit.co/active_storage/sfx/2/2-preview.mp3" type="audio/mpeg">
-    </audio>
-    <audio id="epicSound" preload="auto">
-        <source src="https://assets.mixkit.co/active_storage/sfx/6/6-preview.mp3" type="audio/mpeg">
-    </audio>
-    <audio id="legendarySound" preload="auto">
-        <source src="https://assets.mixkit.co/active_storage/sfx/1028/1028-preview.mp3" type="audio/mpeg">
-    </audio>
 
     <script>
-        const rarities = [
-            { name: "Common", class: "common", chance: 60 },
-            { name: "Uncommon", class: "uncommon", chance: 25 },
-            { name: "Rare", class: "rare", chance: 10 },
-            { name: "Epic", class: "epic", chance: 4 },
-            { name: "Legendary", class: "legendary", chance: 1 }
+        // Aura data with their rarities and colors
+        const RARITIES = {
+            COMMON: { name: "Common", chance: 0.50, color: "#aaaaaa", class: "common" },
+            UNCOMMON: { name: "Uncommon", chance: 0.30, color: "#55ff55", class: "uncommon" },
+            RARE: { name: "Rare", chance: 0.15, color: "#5555ff", class: "rare" },
+            EPIC: { name: "Epic", chance: 0.03, color: "#aa00aa", class: "epic" },
+            LEGENDARY: { name: "Legendary", chance: 0.015, color: "#ffaa00", class: "legendary" },
+            MYTHIC: { name: "Mythic", chance: 0.0045, color: "#ff5555", class: "mythic" },
+            COSMIC: { name: "Cosmic", chance: 0.0005, color: "#aa00ff", class: "cosmic" },
+            DIVINE: { name: "Divine", chance: 0.0001, color: "#ffffff", class: "divine" }
+        };
+        
+        // Sort by rarity value (highest to lowest)
+        const RARITY_ORDER = [
+            "DIVINE", "COSMIC", "MYTHIC", "LEGENDARY", "EPIC", "RARE", "UNCOMMON", "COMMON"
         ];
-
-        const reel = document.getElementById('reel');
-        const modal = document.getElementById('modal');
-        const gambleButton = document.getElementById('gambleButton');
-        const closeModalButton = document.getElementById('closeModal');
-        const resultDisplay = document.getElementById('result');
-        const timerDisplay = document.getElementById('timer');
-        const cooldownBar = document.getElementById('cooldownBar');
-        const actionButtons = document.getElementById('actionButtons');
-        const equipButton = document.getElementById('equipButton');
-        const skipButton = document.getElementById('skipButton');
-        const equippedTitle = document.getElementById('equippedTitle');
-        const currentTitle = document.getElementById('currentTitle');
-        const soundToggle = document.getElementById('soundToggle');
         
-        // Audio elements
-        const spinSound = document.getElementById('spinSound');
-        const tickSound = document.getElementById('tickSound');
-        const commonSound = document.getElementById('commonSound');
-        const uncommonSound = document.getElementById('uncommonSound');
-        const rareSound = document.getElementById('rareSound');
-        const epicSound = document.getElementById('epicSound');
-        const legendarySound = document.getElementById('legendarySound');
-        
-        let cooldownTime = 4; // Cooldown in seconds
-        let cooldownActive = false;
-        let timerId = null;
-        let spinInProgress = false;
-        let currentRarity = null;
-        let reelInitialized = false;
-        let winningItem = null;
-        let soundEnabled = true;
-        let centerLineObserver = null;
-        let lastPlayedTick = 0;
-        
-        // Initialize the reel with items
-        function initializeReel() {
-            // Create many items to ensure smooth scrolling
-            const totalItems = 100;
-            reel.innerHTML = '';
+        const AURAS = [
+            // Common Auras
+            { name: "Terra", rarity: "COMMON", description: "The gentle aura of earth" },
+            { name: "Aqua", rarity: "COMMON", description: "The flowing aura of water" },
+            { name: "Breeze", rarity: "COMMON", description: "The light aura of wind" },
+            { name: "Spark", rarity: "COMMON", description: "The warm aura of fire" },
+            { name: "Bloom", rarity: "COMMON", description: "The nurturing aura of growth" },
+            { name: "Shade", rarity: "COMMON", description: "The calm aura of shadows" },
+            { name: "Dawn", rarity: "COMMON", description: "The hopeful aura of morning" },
+            { name: "Dusk", rarity: "COMMON", description: "The reflective aura of evening" },
             
-            for (let i = 0; i < totalItems; i++) {
-                const randomRarity = getRandomRarity();
-                const rarityItem = document.createElement('div');
-                rarityItem.className = `rarity-item ${randomRarity.class}`;
-                rarityItem.dataset.rarity = randomRarity.name;
-                
-                const rarityName = document.createElement('div');
-                rarityName.textContent = randomRarity.name;
-                
-                const rarityPercentage = document.createElement('div');
-                rarityPercentage.className = 'rarity-percentage';
-                rarityPercentage.textContent = `${randomRarity.chance}%`;
-                
-                const shine = document.createElement('div');
-                shine.className = 'shine';
-                
-                rarityItem.appendChild(rarityName);
-                rarityItem.appendChild(rarityPercentage);
-                rarityItem.appendChild(shine);
-                reel.appendChild(rarityItem);
-            }
+            // Uncommon Auras
+            { name: "Stone", rarity: "UNCOMMON", description: "The strong aura of mountains" },
+            { name: "Stream", rarity: "UNCOMMON", description: "The persistent aura of rivers" },
+            { name: "Gale", rarity: "UNCOMMON", description: "The forceful aura of wind" },
+            { name: "Flame", rarity: "UNCOMMON", description: "The passionate aura of fire" },
+            { name: "Forest", rarity: "UNCOMMON", description: "The wild aura of nature" },
+            { name: "Night", rarity: "UNCOMMON", description: "The mysterious aura of darkness" },
+            { name: "Morning", rarity: "UNCOMMON", description: "The energetic aura of sunrise" },
+            { name: "Evening", rarity: "UNCOMMON", description: "The tranquil aura of sunset" },
+            { name: "Cloud", rarity: "UNCOMMON", description: "The dreamy aura of the sky" },
+            { name: "Frost", rarity: "UNCOMMON", description: "The cool aura of winter" },
             
-            // Position the reel initially
-            reel.style.transform = 'translateX(0)';
-            reelInitialized = true;
+            // Rare Auras
+            { name: "Mountain", rarity: "RARE", description: "The majestic aura of peaks" },
+            { name: "Ocean", rarity: "RARE", description: "The vast aura of seas" },
+            { name: "Hurricane", rarity: "RARE", description: "The chaotic aura of storms" },
+            { name: "Blaze", rarity: "RARE", description: "The intense aura of inferno" },
+            { name: "Jungle", rarity: "RARE", description: "The lush aura of wilderness" },
+            { name: "Abyss", rarity: "RARE", description: "The deep aura of void" },
+            { name: "Daybreak", rarity: "RARE", description: "The brilliant aura of dawn" },
+            { name: "Twilight", rarity: "RARE", description: "The fading aura of dusk" },
+            { name: "Thunder", rarity: "RARE", description: "The electric aura of storms" },
+            { name: "Crystal", rarity: "RARE", description: "The clear aura of purity" },
+            { name: "Moon", rarity: "RARE", description: "The serene aura of night" },
+            { name: "Star", rarity: "RARE", description: "The twinkling aura of space" },
+            
+            // Epic Auras
+            { name: "Terra Nova", rarity: "EPIC", description: "The reborn aura of earth" },
+            { name: "Tsunami", rarity: "EPIC", description: "The overwhelming aura of water" },
+            { name: "Tempest", rarity: "EPIC", description: "The untamable aura of wind" },
+            { name: "Inferno", rarity: "EPIC", description: "The consuming aura of fire" },
+            { name: "Genesis", rarity: "EPIC", description: "The primordial aura of creation" },
+            { name: "Eclipse", rarity: "EPIC", description: "The shadowed aura of celestial union" },
+            { name: "Void", rarity: "EPIC", description: "The empty aura of nothingness" },
+            { name: "Aurora", rarity: "EPIC", description: "The dancing aura of sky lights" },
+            
+            // Legendary Auras
+            { name: "Terra Firma", rarity: "LEGENDARY", description: "The foundation aura of existence" },
+            { name: "Maelstrom", rarity: "LEGENDARY", description: "The all-consuming aura of water" },
+            { name: "Hurricane Force", rarity: "LEGENDARY", description: "The devastating aura of air" },
+            { name: "Eternal Flame", rarity: "LEGENDARY", description: "The undying aura of fire" },
+            { name: "Ancient One", rarity: "LEGENDARY", description: "The timeless aura of ages" },
+            { name: "Celestial Body", rarity: "LEGENDARY", description: "The heavenly aura of stars" },
+            
+            // Mythic Auras
+            { name: "World Soul", rarity: "MYTHIC", description: "The conscious aura of planets" },
+            { name: "Ocean's Heart", rarity: "MYTHIC", description: "The deep aura of all seas" },
+            { name: "Skyfather", rarity: "MYTHIC", description: "The lordly aura of the heavens" },
+            { name: "Phoenix Force", rarity: "MYTHIC", description: "The rebirthing aura of flames" },
+            { name: "Cosmic Tree", rarity: "MYTHIC", description: "The connecting aura of all life" },
+            
+            // Cosmic Auras
+            { name: "Universal Truth", rarity: "COSMIC", description: "The fundamental aura of reality" },
+            { name: "Infinite Void", rarity: "COSMIC", description: "The boundless aura of space" },
+            { name: "Astral Essence", rarity: "COSMIC", description: "The spiritual aura of existence" },
+            
+            // Divine Auras
+            { name: "Alpha & Omega", rarity: "DIVINE", description: "The ultimate aura of creation and destruction" },
+            { name: "Sol's Light", rarity: "DIVINE", description: "The supreme aura of divinity" }
+        ];
+        
+        // Game state
+        const gameState = {
+            totalRolls: 0,
+            inventory: {},
+            rarestAura: null,
+            luckLevel: 0,
+            pityPoints: 0,
+            pityMax: 100,
+            currentAura: null,
+            sortMethod: "rarity",
+            rolling: false
+        };
+        
+        // Calculate luck boost based on luck level and pity points
+        function calculateLuckBoost() {
+            const luckBoost = gameState.luckLevel * 0.1;
+            const pityBoost = (gameState.pityPoints / gameState.pityMax) * 0.5;
+            return luckBoost + pityBoost;
         }
         
-        // Get a random rarity based on the chance percentages
-        function getRandomRarity() {
-            const rand = Math.random() * 100;
-            let cumulativeChance = 0;
+        // Update pity points based on rolled aura
+        function updatePityPoints(aura) {
+            const rarityIndex = RARITY_ORDER.indexOf(aura.rarity);
             
-            for (const rarity of rarities) {
-                cumulativeChance += rarity.chance;
-                if (rand < cumulativeChance) {
-                    return rarity;
+            // Pity increases more for common auras
+            if (rarityIndex >= RARITY_ORDER.indexOf("UNCOMMON")) {
+                gameState.pityPoints += 10;
+            } else if (rarityIndex >= RARITY_ORDER.indexOf("RARE")) {
+                gameState.pityPoints += 5;
+            } else if (rarityIndex >= RARITY_ORDER.indexOf("EPIC")) {
+                gameState.pityPoints += 2;
+            } else {
+                // No pity for high rarity rolls
+                gameState.pityPoints = 0;
+            }
+            
+            // Cap pity
+            if (gameState.pityPoints > gameState.pityMax) {
+                gameState.pityPoints = gameState.pityMax;
+                // Level up luck if maxed
+                if (Math.random() < 0.1) {
+                    gameState.luckLevel++;
+                    gameState.pityPoints = 0;
                 }
             }
-            
-            // Fallback (should never happen with proper percentages)
-            return rarities[0];
         }
         
-        // Play sound based on rarity
-        function playRaritySound(rarityName) {
-            if (!soundEnabled) return;
+        // Update rarest aura obtained
+        function updateRarestAura(aura) {
+            const currentRarityIndex = gameState.rarestAura ? 
+                RARITY_ORDER.indexOf(gameState.rarestAura.rarity) : 
+                RARITY_ORDER.length - 1;
+                
+            const newRarityIndex = RARITY_ORDER.indexOf(aura.rarity);
             
-            switch(rarityName) {
-                case 'Common':
-                    commonSound.currentTime = 0;
-                    commonSound.play();
-                    break;
-                case 'Uncommon':
-                    uncommonSound.currentTime = 0;
-                    uncommonSound.play();
-                    break;
-                case 'Rare':
-                    rareSound.currentTime = 0;
-                    rareSound.play();
-                    break;
-                case 'Epic':
-                    epicSound.currentTime = 0;
-                    epicSound.play();
-                    break;
-                case 'Legendary':
-                    legendarySound.currentTime = 0;
-                    legendarySound.play();
-                    break;
+            if (newRarityIndex < currentRarityIndex) {
+                gameState.rarestAura = aura;
             }
         }
         
-        // Play tick sound when an item passes the center line
-        function playTickSound() {
-            if (!soundEnabled) return;
+        // Create inventory item
+        function createInventoryItem(invItem) {
+            const { aura, count } = invItem;
+            const rarity = RARITIES[aura.rarity];
             
-            // Prevent sound overlap by checking time since last play
-            const now = Date.now();
-            if (now - lastPlayedTick > 150) { // Don't play more often than every 150ms
-                tickSound.currentTime = 0;
-                tickSound.volume = 0.3;
-                tickSound.play();
-                lastPlayedTick = now;
-            }
-        }
-        
-        // Setup the intersection observer for the center line
-        function setupCenterLineObserver() {
-            if (centerLineObserver) {
-                centerLineObserver.disconnect();
-            }
+            const item = document.createElement('div');
+            item.className = 'inventory-item';
             
-            const centerMarker = document.querySelector('.center-marker');
-            const reelItems = document.querySelectorAll('.rarity-item');
+            const glow = document.createElement('div');
+            glow.className = 'inv-aura-glow';
+            glow.style.backgroundColor = rarity.color;
             
-            // Configure the observer to detect when items cross the center line
-            const options = {
-                root: document.querySelector('.reel-container'),
-                rootMargin: '0px',
-                threshold: 0.5
-            };
+            const name = document.createElement('div');
+            name.className = `inv-name ${rarity.class}`;
+            name.textContent = aura.name;
             
-            centerLineObserver = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting && spinInProgress) {
-                        const item = entry.target;
-                        
-                        // Play tick sound
-                        playTickSound();
-                        
-                        // Briefly enlarge the item
-                        item.classList.add('enlarged');
-                        
-                        // Remove the enlarged class after a short delay
-                        setTimeout(() => {
-                            item.classList.remove('enlarged');
-                        }, 300);
-                    }
-                });
-            }, options);
+            const rarityBadge = document.createElement('div');
+            rarityBadge.className = `rarity-badge ${rarity.class}`;
+            rarityBadge.textContent = rarity.name;
             
-            // Observe all reel items
-            reelItems.forEach(item => {
-                centerLineObserver.observe(item);
+            const countElem = document.createElement('div');
+            countElem.className = 'inv-count';
+            countElem.textContent = `×${count}`;
+            
+            item.appendChild(glow);
+            item.appendChild(name);
+            item.appendChild(rarityBadge);
+            item.appendChild(countElem);
+            
+            // Show aura details on click
+            item.addEventListener('click', () => {
+                displayAura(aura);
             });
+            
+            return item;
         }
+
+        // DOM Elements
+        const rollButton = document.getElementById('roll-button');
+        const auraDisplay = document.querySelector('.aura-display');
+        const auraGlow = document.querySelector('.aura-glow');
+        const auraName = document.querySelector('.aura-name');
+        const auraRarity = document.querySelector('.aura-rarity');
+        const totalRollsElement = document.getElementById('total-rolls');
+        const rarestAuraElement = document.getElementById('rarest-aura');
+        const uniqueAurasElement = document.getElementById('unique-auras');
+        const luckLevelElement = document.getElementById('luck-level');
+        const pityPointsElement = document.getElementById('pity-points');
+        const pityMaxElement = document.getElementById('pity-max');
+        const luckEffectElement = document.getElementById('luck-effect');
+        const luckFill = document.querySelector('.luck-fill');
+        const inventoryGrid = document.getElementById('inventory-grid');
+        const sortButtons = document.querySelectorAll('.sort-button');
         
-        // Open the gambling modal
-        function openModal() {
-            // Make sure the reel is initialized when opening the modal
-            if (!reelInitialized) {
-                initializeReel();
-            }
+        // Roll for a new aura
+        function rollAura() {
+            if (gameState.rolling) return;
+            gameState.rolling = true;
             
-            modal.classList.add('active');
+            // Animation
+            auraDisplay.classList.add('rolling');
+            auraName.textContent = "...";
+            auraRarity.textContent = "Rolling...";
+            auraGlow.style.backgroundColor = "#777";
             
-            // Reset UI elements
-            resultDisplay.textContent = 'Click GAMBLE to spin!';
-            resultDisplay.style.color = 'white';
-            resultDisplay.className = 'result-container';
-            actionButtons.classList.remove('visible');
-            equippedTitle.classList.remove('visible');
+            // Disable button during roll
+            rollButton.disabled = true;
             
-            // Ensure we have items in the reel
-            if (reel.children.length === 0) {
-                initializeReel();
-            }
-            
-            // Set up the center line observer
+            // Simulate rolling delay
             setTimeout(() => {
-                setupCenterLineObserver();
-            }, 300);
-        }
-        
-        // Close the gambling modal
-        function closeModal() {
-            modal.classList.remove('active');
-            
-            // Reset UI elements
-            resultDisplay.textContent = 'Ready to spin!';
-            resultDisplay.style.color = 'white';
-            resultDisplay.className = 'result-container';
-            actionButtons.classList.remove('visible');
-            equippedTitle.classList.remove('visible');
-            
-            // Reset any ongoing animations
-            if (winningItem) {
-                winningItem.classList.remove('highlight');
-                winningItem.classList.remove('enlarged');
-                const shine = winningItem.querySelector('.shine');
-                if (shine) shine.classList.remove('shine-animation');
-                winningItem = null;
-            }
-            
-            // Clean up the intersection observer
-            if (centerLineObserver) {
-                centerLineObserver.disconnect();
-                centerLineObserver = null;
-            }
-        }
-        
-        // Animate the reel and determine the result
-        function spin() {
-            if (spinInProgress || cooldownActive) return;
-            
-            // Make sure the reel is initialized
-            if (!reelInitialized || reel.children.length === 0) {
-                initializeReel();
-                setTimeout(() => {
-                    setupCenterLineObserver();
-                }, 100);
-            }
-            
-            spinInProgress = true;
-            actionButtons.classList.remove('visible');
-            equippedTitle.classList.remove('visible');
-            
-            // Reset display
-            resultDisplay.textContent = "Spinning...";
-            resultDisplay.style.color = "white";
-            resultDisplay.className = 'result-container';
-            
-            // Disable the button during spin
-            gambleButton.disabled = true;
-            
-            // Play spin sound
-            if (soundEnabled) {
-                spinSound.currentTime = 0;
-                spinSound.play();
-            }
-            
-            // Determine the result ahead of time
-            const resultRarity = getRandomRarity();
-            currentRarity = resultRarity;
-            
-            // Get the width of a single item
-            const itemWidth = 190; // 180px width + 10px margin
-            
-            // Calculate a random position for the result
-            const totalWidth = reel.children.length * itemWidth;
-            
-            // Find a specific item of the desired rarity
-            const rarityItems = Array.from(reel.children).filter(
-                item => item.dataset.rarity === resultRarity.name
-            );
-            
-            // Choose a random item of the correct rarity
-            const targetItem = rarityItems[Math.floor(Math.random() * rarityItems.length)];
-            winningItem = targetItem; // Store for later cleanup
-            const targetIndex = Array.from(reel.children).indexOf(targetItem);
-            
-            // Calculate the exact position to stop (center the item in the viewport)
-            // Get the width of the modal content
-            const modalWidth = document.querySelector('.modal-content').clientWidth;
-            const centerOffset = (modalWidth / 2) - (itemWidth / 2);
-            
-            // For left-to-right motion, we start far left and end with the target centered
-            // We want the reel to move FROM left TO right (opposite direction from original)
-            const scrollDistance = 3000 + Math.random() * 1000; // Random distance between 3000-4000px
-            const startPosition = -5000; // Start far off to the left
-            const finalPosition = startPosition + scrollDistance;
-            
-            // Position the reel far to the left before starting the animation
-            reel.style.transition = 'none';
-            reel.style.transform = `translateX(${startPosition}px)`;
-            
-            // Force a reflow to make sure the initial position is applied before starting the animation
-            void reel.offsetWidth;
-            
-            // Animate the reel from left to right
-            reel.style.transition = 'transform 4s cubic-bezier(0.15, 0.9, 0.3, 1)';
-            reel.style.transform = `translateX(${finalPosition}px)`;
-            
-            // Update the result after animation is done
-            setTimeout(() => {
-                spinInProgress = false;
-                cooldownActive = true;
+                // Increment roll counter
+                gameState.totalRolls++;
                 
-                if (targetItem) {
-                    // Make the winner glow and enlarged
-                    targetItem.classList.add('highlight');
-                    targetItem.classList.add('enlarged');
-                    
-                    // Apply shine animation to the winner
-                    const shine = targetItem.querySelector('.shine');
-                    if (shine) shine.classList.add('shine-animation');
-                    
-                    // Update result text - make sure we're displaying the correct rarity
-                    const displayedRarity = targetItem.dataset.rarity;
-                    currentRarity = rarities.find(r => r.name === displayedRarity) || currentRarity;
-                    
-                    resultDisplay.textContent = `${currentRarity.name}!`;
-                    resultDisplay.style.color = getColorForRarity(currentRarity.class);
-                    resultDisplay.classList.add('glow-text');
-                    
-                    // Play appropriate sound for the rarity
-                    playRaritySound(currentRarity.name);
+                // Calculate luck boost
+                const luckBoost = calculateLuckBoost();
+                
+                // Get a random aura based on rarity probabilities and luck
+                const rolledAura = getRandomAura(luckBoost);
+                gameState.currentAura = rolledAura;
+                
+                // Add to inventory
+                if (!gameState.inventory[rolledAura.name]) {
+                    gameState.inventory[rolledAura.name] = {
+                        aura: rolledAura,
+                        count: 0
+                    };
                 }
+                gameState.inventory[rolledAura.name].count++;
                 
-                // Show action buttons
-                actionButtons.classList.add('visible');
+                // Update rarest aura if applicable
+                updateRarestAura(rolledAura);
                 
-                // Start the cooldown timer
-                startCooldownTimer();
-            }, 4000); // Match this with the CSS transition time
-        }
-        
-        function equipTitle() {
-            if (!currentRarity) return;
-            
-            const title = getTitleForRarity(currentRarity.name);
-            currentTitle.textContent = title;
-            currentTitle.style.color = getColorForRarity(currentRarity.class);
-            
-            // Play sound when equipping
-            if (soundEnabled) {
-                const equipSound = document.createElement('audio');
-                equipSound.src = "https://assets.mixkit.co/active_storage/sfx/254/254-preview.mp3";
-                equipSound.play();
-            }
-            
-            // Close the modal after equipping
-            closeModal();
-        }
-        
-        function skipTitle() {
-            // Play sound when skipping
-            if (soundEnabled) {
-                const skipSound = document.createElement('audio');
-                skipSound.src = "https://assets.mixkit.co/active_storage/sfx/337/337-preview.mp3";
-                skipSound.play();
-            }
-            
-            // Close the modal after skipping
-            closeModal();
-        }
-        
-        function getTitleForRarity(rarity) {
-            const titles = {
-                "Common": [
-                    "Novice Gambler", 
-                    "Time Waster", 
-                    "Mental Patient", 
-                    "Average Joe"
-                ],
-                "Uncommon": [
-                    "Mind Dabbler", 
-                    "Thoughtful One", 
-                    "Time Investor", 
-                    "Mental Athlete"
-                ],
-                "Rare": [
-                    "Thought Provoker", 
-                    "Mind Master", 
-                    "Deep Thinker", 
-                    "Time Bender"
-                ],
-                "Epic": [
-                    "Mental Maestro", 
-                    "Time Lord", 
-                    "Thought Wizard", 
-                    "Psyche Champion"
-                ],
-                "Legendary": [
-                    "God of Time", 
-                    "Mental Emperor", 
-                    "Transcendent Mind", 
-                    "Cosmic Thinker"
-                ]
-            };
-            
-            const rarityTitles = titles[rarity] || titles["Common"];
-            return rarityTitles[Math.floor(Math.random() * rarityTitles.length)];
-        }
-        
-        function getColorForRarity(rarityClass) {
-            switch(rarityClass) {
-                case 'common': return '#aaaaaa';
-                case 'uncommon': return '#4CAF50';
-                case 'rare': return '#2196F3';
-                case 'epic': return '#9C27B0';
-                case 'legendary': return '#FFC107';
-                default: return 'white';
-            }
-        }
-        
-        function startCooldownTimer() {
-            let timeLeft = cooldownTime;
-            cooldownBar.style.width = '100%';
-            cooldownBar.style.transition = `width ${cooldownTime}s linear`;
-            
-            updateTimerDisplay(timeLeft);
-            
-            setTimeout(() => {
-                cooldownBar.style.width = '0%';
-            }, 50);
-            
-            timerId = setInterval(() => {
-                timeLeft--;
-                updateTimerDisplay(timeLeft);
+                // Update pity points
+                updatePityPoints(rolledAura);
                 
-                if (timeLeft <= 0) {
-                    clearInterval(timerId);
-                    cooldownActive = false;
-                    gambleButton.disabled = false;
-                    timerDisplay.textContent = '';
-                }
+                // Display the result
+                displayAura(rolledAura);
+                
+                // Update all stats displays
+                updateAllDisplays();
+                
+                // Save game
+                saveGame();
+                
+                // Re-enable button
+                rollButton.disabled = false;
+                gameState.rolling = false;
+                
             }, 1000);
         }
         
-        function updateTimerDisplay(time) {
-            timerDisplay.textContent = `Ready in ${time}s`;
+        // Get random aura based on rarity probabilities
+        function getRandomAura(luckBoost = 0) {
+            // Apply luck boost to probabilities
+            const adjustedRarities = {};
+            let totalChance = 0;
+            
+            for (const [key, rarity] of Object.entries(RARITIES)) {
+                // For Common, actually reduce chance as luck increases
+                if (key === "COMMON") {
+                    adjustedRarities[key] = Math.max(0.1, rarity.chance - (luckBoost * 0.05));
+                } 
+                // For others, increase chance as luck increases
+                else {
+                    let boost = luckBoost;
+                    
+                    // Higher boosts for rarer tiers
+                    if (key === "DIVINE") boost *= 2;
+                    if (key === "COSMIC") boost *= 1.8;
+                    if (key === "MYTHIC") boost *= 1.5;
+                    if (key === "LEGENDARY") boost *= 1.2;
+                    
+                    adjustedRarities[key] = rarity.chance * (1 + boost);
+                }
+                
+                totalChance += adjustedRarities[key];
+            }
+            
+            // Normalize to ensure total is 1.0
+            for (const key in adjustedRarities) {
+                adjustedRarities[key] /= totalChance;
+            }
+            
+            // Roll for rarity
+            const randValue = Math.random();
+            let cumulativeChance = 0;
+            let selectedRarity = "COMMON"; // Default
+            
+            for (const rarity in adjustedRarities) {
+                cumulativeChance += adjustedRarities[rarity];
+                if (randValue <= cumulativeChance) {
+                    selectedRarity = rarity;
+                    break;
+                }
+            }
+            
+            // Get all auras of the selected rarity
+            const possibleAuras = AURAS.filter(aura => aura.rarity === selectedRarity);
+            
+            // Select one randomly
+            return possibleAuras[Math.floor(Math.random() * possibleAuras.length)];
+        }
+
+        // Display an aura in the main display
+        function displayAura(aura) {
+            const rarity = RARITIES[aura.rarity];
+            
+            auraDisplay.classList.remove('rolling');
+            auraName.textContent = aura.name;
+            auraRarity.textContent = rarity.name;
+            auraGlow.style.backgroundColor = rarity.color;
+            
+            // Clear existing classes
+            auraName.className = 'aura-name';
+            auraRarity.className = 'aura-rarity';
+            
+            // Add rarity class
+            auraName.classList.add(rarity.class);
+            auraRarity.classList.add(rarity.class);
+            
+            // Special effects for rare+ auras
+            if (RARITY_ORDER.indexOf(aura.rarity) <= RARITY_ORDER.indexOf("EPIC")) {
+                auraDisplay.style.boxShadow = `0 0 30px ${rarity.color}`;
+                
+                // Extra animation for legendary+ auras
+                if (RARITY_ORDER.indexOf(aura.rarity) <= RARITY_ORDER.indexOf("LEGENDARY")) {
+                    const keyframes = `
+                    @keyframes pulse-${rarity.class} {
+                        0% { transform: scale(1); }
+                        50% { transform: scale(1.05); }
+                        100% { transform: scale(1); }
+                    }`;
+                    
+                    // Add keyframes to document
+                    const style = document.createElement('style');
+                    style.innerHTML = keyframes;
+                    document.head.appendChild(style);
+                    
+                    // Apply animation
+                    auraDisplay.style.animation = `pulse-${rarity.class} 2s infinite`;
+                }
+            } else {
+                auraDisplay.style.boxShadow = '';
+                auraDisplay.style.animation = '';
+            }
         }
         
-        function toggleSound() {
-            soundEnabled = !soundEnabled;
-            soundToggle.textContent = soundEnabled ? '🔊' : '🔇';
+        // Update all displays
+        function updateAllDisplays() {
+            updateStatsDisplay();
+            updateLuckDisplay();
+            updateInventoryDisplay();
+        }
+  
+  // Update stats panel
+        function updateStatsDisplay() {
+            totalRollsElement.textContent = `Total Rolls: ${gameState.totalRolls}`;
+            
+            if (gameState.rarestAura) {
+                const rarity = RARITIES[gameState.rarestAura.rarity];
+                rarestAuraElement.textContent = `Rarest Aura: ${gameState.rarestAura.name} (${rarity.name})`;
+                rarestAuraElement.className = rarity.class;
+            } else {
+                rarestAuraElement.textContent = "Rarest Aura: None";
+                rarestAuraElement.className = "";
+            }
+            
+            const uniqueCount = Object.keys(gameState.inventory).length;
+            uniqueAurasElement.textContent = `Unique Auras: ${uniqueCount}/${AURAS.length}`;
         }
         
-        // Initialize game on load
-        window.addEventListener('load', function() {
-            initializeReel();
-        });
-        
-        // Add event listeners
-        gambleButton.addEventListener('click', function() {
-            openModal();
-            // Wait a moment for the modal to be fully visible before spinning
-            setTimeout(spin, 300);
-        });
-        
-        closeModalButton.addEventListener('click', closeModal);
-        equipButton.addEventListener('click', equipTitle);
-        skipButton.addEventListener('click', skipTitle);
-        soundToggle.addEventListener('click', toggleSound);
-        
-        // Fix for blank reel issue - ensure reel is initialized on visibility changes
-        document.addEventListener('visibilitychange', function() {
-            if (!document.hidden && modal.classList.contains('active') && 
-                (!reelInitialized || reel.children.length === 0)) {
-                initializeReel();
+        // Update luck panel
+        function updateLuckDisplay() {
+            luckLevelElement.textContent = gameState.luckLevel;
+            pityPointsElement.textContent = gameState.pityPoints;
+            pityMaxElement.textContent = gameState.pityMax;
+            
+            // Update luck meter
+            const fillPercentage = (gameState.pityPoints / gameState.pityMax) * 100;
+            luckFill.style.width = `${fillPercentage}%`;
+            
+            // Update luck effect text
+            const luckBoost = calculateLuckBoost();
+            if (luckBoost <= 0) {
+                luckEffectElement.textContent = "Current Effect: None";
+            } else {
+                const boostPercent = Math.round(luckBoost * 100);
+                luckEffectElement.textContent = `Current Effect: +${boostPercent}% rare aura chance`;
             }
-        });
+        }
         
-        // Additional safeguard against blank reels
-        modal.addEventListener('transitionend', function() {
-            if (modal.classList.contains('active') && 
-                (!reelInitialized || reel.children.length === 0)) {
-                initializeReel();
-            }
-        });
-    </script>
-</body>
-</html>
+        // Update inventory display
+        function updateInventoryDisplay() {
+            // Clear inventory
+            inventoryGrid.innerHTML = "";
+            
+            // Get array of inventory items
+            let inventoryArray = Object.values(gameState.inventory);
+            
+            // Sort inventory based on current sort method
+            switch (gameState.sortMethod) {
+                case "name":
+                    inventoryArray.sort((a, b) => a.aura.name.localeCompare(b.aura.name));
+                    break;
+                case "count":
+                    inventoryArray.sort((a, b) => b.count - a.count);
+                    break;
+                case "rarity":
+                default:
+                    // Complete the sorting functionality that was cut off
+inventoryArray.sort((a, b) => {
+    const rarityA = RARITY_ORDER.indexOf(a.aura.rarity);
+    const rarityB = RARITY_ORDER.indexOf(b.aura.rarity);
+    return rarityA - rarityB;
+});
+break;
+}
+
+// Add sorted items to inventory grid
+inventoryArray.forEach(item => {
+    const itemElement = createInventoryItem(item);
+    inventoryGrid.appendChild(itemElement);
+});
+}
+
+// Handle sort button clicks
+sortButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        // Update sort method
+        gameState.sortMethod = button.dataset.sort;
+        
+        // Update inventory display with new sort
+        updateInventoryDisplay();
+        
+        // Update button styling
+        sortButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+    });
+});
+
+// Save game state to local storage
+function saveGame() {
+    localStorage.setItem('solAuraRoller', JSON.stringify({
+        totalRolls: gameState.totalRolls,
+        inventory: gameState.inventory,
+        rarestAura: gameState.rarestAura,
+        luckLevel: gameState.luckLevel,
+        pityPoints: gameState.pityPoints
+    }));
+}
+
+// Load game state from local storage
+function loadGame() {
+    const savedData = localStorage.getItem('solAuraRoller');
+    
+    if (savedData) {
+        const parsed = JSON.parse(savedData);
+        
+        gameState.totalRolls = parsed.totalRolls || 0;
+        gameState.inventory = parsed.inventory || {};
+        gameState.rarestAura = parsed.rarestAura || null;
+        gameState.luckLevel = parsed.luckLevel || 0;
+        gameState.pityPoints = parsed.pityPoints || 0;
+        
+        // Update all displays with loaded data
+        updateAllDisplays();
+        
+        // If there was a current aura, display it
+        if (parsed.currentAura) {
+            displayAura(parsed.currentAura);
+        }
+    }
+}
+
+// Initialize the game
+function initGame() {
+    // Load saved game
+    loadGame();
+    
+    // Setup event listeners
+    rollButton.addEventListener('click', rollAura);
+    
+    // Set default sort method button as active
+    document.querySelector(`[data-sort="${gameState.sortMethod}"]`).classList.add('active');
+    
+    // Initial display updates
+    updateAllDisplays();
+}
+
+// Start the game when page loads
+window.addEventListener('DOMContentLoaded', initGame);
