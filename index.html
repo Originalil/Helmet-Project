@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EcoGuard Helmet</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    .tab-content { display: none; }
+    .active-tab { display: block; }
+  </style>
+</head>
+<body class="bg-green-50 font-sans">
+
+  <header class="bg-green-200 text-center py-8 shadow-md sticky top-0 z-40">
+    <h1 class="text-4xl font-bold text-green-800">EcoGuard Helmet</h1>
+    <p class="text-green-700 mt-2">Our priority is not you, it's the helmet</p>
+  </header>
+
+  <nav class="bg-green-100 py-4 shadow-sm flex justify-center gap-6 text-green-700 font-semibold sticky top-20 z-30">
+    <button onclick="switchTab('materials')" class="hover:bg-green-200 px-3 py-1 rounded-full" id="tab-materials">Materials</button>
+    <button onclick="switchTab('why')" class="hover:bg-green-200 px-3 py-1 rounded-full" id="tab-why">Why Choose This?</button>
+    <button onclick="switchTab('creators')" class="hover:bg-green-200 px-3 py-1 rounded-full" id="tab-creators">Creators</button>
+    <button onclick="switchTab('about')" class="hover:bg-green-200 px-3 py-1 rounded-full" id="tab-about">About</button>
+    <button onclick="switchTab('design')" class="hover:bg-green-200 px-3 py-1 rounded-full" id="tab-design">Design</button>
+  </nav>
+
+  <main class="px-4 py-10 max-w-6xl mx-auto space-y-10">
+    <section id="materials" class="tab-content active-tab">
+      <h2 class="text-3xl font-extrabold text-green-700 mb-6 border-b-2 pb-2 border-green-300">Materials</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white rounded-2xl shadow-lg p-6 border border-green-200">
+          <h3 class="text-lg font-bold text-green-800 mb-2">Bamboo Fiber Shell</h3>
+          <p class="text-green-700">The outside of the helmet. Bamboo is super strong and grows fast. Great for keeping your head safe.</p>
+        </div>
+        <div class="bg-white rounded-2xl shadow-lg p-6 border border-green-200">
+          <h3 class="text-lg font-bold text-green-800 mb-2">Cork Foam Padding</h3>
+          <p class="text-green-700">Inside the helmet. Cork is soft and bouncy, so it helps stop head injuries if you fall.</p>
+        </div>
+        <div class="bg-white rounded-2xl shadow-lg p-6 border border-green-200">
+          <h3 class="text-lg font-bold text-green-800 mb-2">Organic Cotton Lining</h3>
+          <p class="text-green-700">Touches your head. It feels comfy and uses no harmful chemicals to grow.</p>
+        </div>
+        <div class="bg-white rounded-2xl shadow-lg p-6 border border-green-200">
+          <h3 class="text-lg font-bold text-green-800 mb-2">Plant-Based Resin</h3>
+          <p class="text-green-700">Natural glue made from plants like tree sap. It holds all the parts together.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="why" class="tab-content">
+      <h2 class="text-3xl font-extrabold text-green-700 mb-6 border-b-2 pb-2 border-green-300">Why Choose This Helmet?</h2>
+      <p class="text-green-900 leading-relaxed text-lg">
+        This helmet isn’t just safe — it’s smart. Made from natural stuff that helps the Earth, it still protects your head and feels comfy.
+      </p>
+    </section>
+
+    <section id="creators" class="tab-content">
+      <h2 class="text-3xl font-extrabold text-green-700 mb-6 border-b-2 pb-2 border-green-300">Creators</h2>
+      <p class="text-green-900 text-lg">Created by Ayaan Farooq and Harrison Vessel.</p>
+    </section>
+
+    <section id="about" class="tab-content">
+      <h2 class="text-3xl font-extrabold text-green-700 mb-6 border-b-2 pb-2 border-green-300">About the EcoGuard Project</h2>
+      <p class="text-green-900 leading-relaxed text-lg">
+        EcoGuard is all about building cool, green gear using smart ideas and eco materials. Our helmet is strong, light, and better for the planet.
+      </p>
+    </section>
+
+    <section id="design" class="tab-content">
+      <h2 class="text-3xl font-extrabold text-green-700 mb-6 border-b-2 pb-2 border-green-300">Design</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <img src="" alt="Design 1" class="rounded-lg border border-green-300 hover:scale-105 transition-transform" />
+        <img src="" alt="Design 2" class="rounded-lg border border-green-300 hover:scale-105 transition-transform" />
+        <img src="" alt="Design 3" class="rounded-lg border border-green-300 hover:scale-105 transition-transform" />
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active-tab'));
+      document.getElementById(tabId).classList.add('active-tab');
+    }
+  </script>
+</body>
+</html>
+
