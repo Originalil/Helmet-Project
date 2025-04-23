@@ -1,841 +1,177 @@
-  
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sol's Aura Roller</title>
-    <style>
-        :root {
-            --common-color: #aaaaaa;
-            --uncommon-color: #55ff55;
-            --rare-color: #5555ff;
-            --epic-color: #aa00aa;
-            --legendary-color: #ffaa00;
-            --mythic-color: #ff5555;
-            --cosmic-color: #aa00ff;
-            --divine-color: #ffffff;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #111;
-            color: #eee;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            background-image: radial-gradient(circle at center, #222, #000);
-        }
-        
-        .container {
-            width: 90%;
-            max-width: 800px;
-        }
-        
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        h1 {
-            font-size: 2.5rem;
-            background: linear-gradient(to right, #ffaa00, #ff5555, #aa00ff);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-bottom: 10px;
-            text-shadow: 0 0 10px rgba(255, 170, 0, 0.3);
-        }
-        
-        .main-content {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        
-        .roll-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            background-color: rgba(0, 0, 0, 0.5);
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
-        }
-        
-        .aura-display {
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 20px;
-            background-color: rgba(0, 0, 0, 0.5);
-            position: relative;
-            overflow: hidden;
-            transition: all 0.5s ease;
-        }
-        
-        .aura-display.rolling {
-            animation: rotate 1s ease-in-out;
-        }
-        
-        @keyframes rotate {
-            0% { transform: scale(1) rotate(0deg); }
-            50% { transform: scale(1.2) rotate(180deg); }
-            100% { transform: scale(1) rotate(360deg); }
-        }
-        
-        .aura-glow {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            filter: blur(15px);
-            opacity: 0.7;
-            z-index: 1;
-        }
-        
-        .aura-info {
-            z-index: 2;
-            text-align: center;
-            font-weight: bold;
-            pointer-events: none;
-        }
-        
-        .aura-name {
-            font-size: 1.5rem;
-            margin-bottom: 5px;
-        }
-        
-        .aura-rarity {
-            font-size: 1rem;
-        }
-        
-        .common { color: var(--common-color); text-shadow: 0 0 5px var(--common-color); }
-        .uncommon { color: var(--uncommon-color); text-shadow: 0 0 5px var(--uncommon-color); }
-        .rare { color: var(--rare-color); text-shadow: 0 0 5px var(--rare-color); }
-        .epic { color: var(--epic-color); text-shadow: 0 0 5px var(--epic-color); }
-        .legendary { color: var(--legendary-color); text-shadow: 0 0 5px var(--legendary-color); }
-        .mythic { color: var(--mythic-color); text-shadow: 0 0 5px var(--mythic-color); }
-        .cosmic { color: var(--cosmic-color); text-shadow: 0 0 5px var(--cosmic-color); }
-        .divine { color: var(--divine-color); text-shadow: 0 0 5px var(--divine-color); }
-        
-        .roll-button {
-            background: linear-gradient(to right, #ffaa00, #aa00ff);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 1.5rem;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            margin: 20px 0;
-            box-shadow: 0 0 10px rgba(255, 170, 0, 0.5);
-        }
-        
-        .roll-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0 15px rgba(255, 170, 0, 0.7);
-        }
-        
-        .roll-button:active {
-            transform: translateY(1px);
-        }
-        
-        .luck-meter {
-            width: 100%;
-            height: 10px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 5px;
-            margin: 10px 0;
-            position: relative;
-        }
-        
-        .luck-fill {
-            height: 100%;
-            border-radius: 5px;
-            background: linear-gradient(to right, #55ff55, #ffaa00, #ff5555);
-            transition: width 0.3s ease;
-        }
-        
-        .stats-luck-section {
-            display: flex;
-            gap: 20px;
-        }
-        
-        .stats-panel, .luck-panel {
-            flex: 1;
-            padding: 15px;
-            background-color: rgba(0, 0, 0, 0.5);
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
-        }
-        
-        .panel-title {
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            padding-bottom: 5px;
-        }
-        
-        .inventory-section {
-            padding: 15px;
-            background-color: rgba(0, 0, 0, 0.5);
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
-        }
-        
-        .inventory-title {
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            padding-bottom: 5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .inventory-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 10px;
-        }
-        
-        .inventory-item {
-            padding: 10px;
-            background-color: rgba(255, 255, 255, 0.05);
-            border-radius: 5px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        
-        .inventory-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-        }
-        
-        .inv-aura-glow {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            margin-bottom: 5px;
-            filter: blur(5px);
-        }
-        
-        .inv-count {
-            font-size: 0.8rem;
-            opacity: 0.7;
-        }
-        
-        .rarity-badge {
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 0.7rem;
-            margin-top: 5px;
-        }
-        
-        .sort-buttons {
-            display: flex;
-            gap: 5px;
-        }
-        
-        .sort-button {
-            background-color: rgba(255, 255, 255, 0.1);
-            border: none;
-            padding: 3px 8px;
-            border-radius: 5px;
-            color: #ddd;
-            cursor: pointer;
-            font-size: 0.8rem;
-        }
-        
-        .sort-button:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-        }
-        
-        footer {
-            margin-top: 30px;
-            text-align: center;
-            opacity: 0.7;
-            font-size: 0.8rem;
-        }
-        
-        @media (max-width: 600px) {
-            .stats-luck-section {
-                flex-direction: column;
-            }
-            
-            .inventory-grid {
-                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <header>
-            <h1>Sol's Aura Roller</h1>
-            <p>Click roll to discover mystical auras from across the cosmos</p>
-        </header>
-        
-        <div class="main-content">
-            <div class="roll-section">
-                <div class="aura-display">
-                    <div class="aura-glow"></div>
-                    <div class="aura-info">
-                        <div class="aura-name">???</div>
-                        <div class="aura-rarity">No Aura</div>
-                    </div>
-                </div>
-                <button class="roll-button" id="roll-button">Roll</button>
-            </div>
-            
-            <div class="stats-luck-section">
-                <div class="stats-panel">
-                    <div class="panel-title">Stats</div>
-                    <div id="total-rolls">Total Rolls: 0</div>
-                    <div id="rarest-aura">Rarest Aura: None</div>
-                    <div id="unique-auras">Unique Auras: 0/60</div>
-                </div>
-                
-                <div class="luck-panel">
-                    <div class="panel-title">Luck System</div>
-                    <div>Luck Level: <span id="luck-level">0</span></div>
-                    <div>Pity Points: <span id="pity-points">0</span>/<span id="pity-max">100</span></div>
-                    <div class="luck-meter">
-                        <div class="luck-fill" style="width: 0%"></div>
-                    </div>
-                    <div id="luck-effect">Current Effect: None</div>
-                </div>
-            </div>
-            
-            <div class="inventory-section">
-                <div class="inventory-title">
-                    <div>Aura Collection</div>
-                    <div class="sort-buttons">
-                        <button class="sort-button" data-sort="name">Name</button>
-                        <button class="sort-button" data-sort="rarity">Rarity</button>
-                        <button class="sort-button" data-sort="count">Count</button>
-                    </div>
-                </div>
-                <div class="inventory-grid" id="inventory-grid">
-                    <!-- Inventory items will be added here -->
-                </div>
-            </div>
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+
+export default function EcoHelmetWebsite() {
+  const [activeTab, setActiveTab] = useState("materials");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className="bg-green-50 min-h-screen font-sans overflow-hidden">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1 }}
+        className="fixed top-0 left-0 w-full h-2 bg-gradient-to-r from-green-300 to-green-600 animate-pulse z-50"
+      />
+
+      <motion.header
+        initial={{ opacity: 0, y: -40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="bg-green-200 text-center py-8 shadow-md sticky top-0 z-40"
+      >
+        <h1 className="text-4xl font-bold text-green-800">EcoGuard Helmet</h1>
+        <p className="text-green-700 mt-2">Our priority is not you, it's the helmet</p>
+      </motion.header>
+
+      <nav className="bg-green-100 py-4 shadow-sm flex justify-center gap-6 text-green-700 font-semibold sticky top-[88px] z-30">
+        {navLinks.map(({ id, label }) => (
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.1 }}
+            key={id}
+            onClick={() => setActiveTab(id)}
+            className={`px-3 py-1 rounded-full transition-all duration-300 ${
+              activeTab === id ? "bg-green-300 text-white" : "hover:bg-green-200"
+            }`}
+          >
+            {label}
+          </motion.button>
+        ))}
+      </nav>
+
+      <main className="px-4 py-10 max-w-6xl mx-auto">
+        <AnimatePresence mode="wait">
+          {sections
+            .filter((section) => section.id === activeTab)
+            .map(({ id, title, content }) => (
+              <motion.section
+                key={id}
+                id={id}
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -50 }}
+                transition={{ duration: 0.4 }}
+                className="mb-20"
+              >
+                <h2 className="text-3xl font-extrabold text-green-700 mb-6 border-b-2 pb-2 border-green-300">
+                  {title}
+                </h2>
+                {typeof content === "string" ? (
+                  <p className="text-green-900 leading-relaxed text-lg">{content}</p>
+                ) : (
+                  content
+                )}
+              </motion.section>
+            ))}
+        </AnimatePresence>
+      </main>
+
+      {loading && (
+        <div className="fixed inset-0 bg-green-100 z-50 flex items-center justify-center">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="text-green-800 text-2xl font-bold animate-pulse"
+          >
+            Loading EcoHelmet...
+          </motion.div>
         </div>
-        
-        <footer>
-            <p>© 2025 Sol's Aura Roller | Seek the Divine light!</p>
-        </footer>
+      )}
     </div>
-
-    <script>
-        // Aura data with their rarities and colors
-        const RARITIES = {
-            COMMON: { name: "Common", chance: 0.50, color: "#aaaaaa", class: "common" },
-            UNCOMMON: { name: "Uncommon", chance: 0.30, color: "#55ff55", class: "uncommon" },
-            RARE: { name: "Rare", chance: 0.15, color: "#5555ff", class: "rare" },
-            EPIC: { name: "Epic", chance: 0.03, color: "#aa00aa", class: "epic" },
-            LEGENDARY: { name: "Legendary", chance: 0.015, color: "#ffaa00", class: "legendary" },
-            MYTHIC: { name: "Mythic", chance: 0.0045, color: "#ff5555", class: "mythic" },
-            COSMIC: { name: "Cosmic", chance: 0.0005, color: "#aa00ff", class: "cosmic" },
-            DIVINE: { name: "Divine", chance: 0.0001, color: "#ffffff", class: "divine" }
-        };
-        
-        // Sort by rarity value (highest to lowest)
-        const RARITY_ORDER = [
-            "DIVINE", "COSMIC", "MYTHIC", "LEGENDARY", "EPIC", "RARE", "UNCOMMON", "COMMON"
-        ];
-        
-        const AURAS = [
-            // Common Auras
-            { name: "Terra", rarity: "COMMON", description: "The gentle aura of earth" },
-            { name: "Aqua", rarity: "COMMON", description: "The flowing aura of water" },
-            { name: "Breeze", rarity: "COMMON", description: "The light aura of wind" },
-            { name: "Spark", rarity: "COMMON", description: "The warm aura of fire" },
-            { name: "Bloom", rarity: "COMMON", description: "The nurturing aura of growth" },
-            { name: "Shade", rarity: "COMMON", description: "The calm aura of shadows" },
-            { name: "Dawn", rarity: "COMMON", description: "The hopeful aura of morning" },
-            { name: "Dusk", rarity: "COMMON", description: "The reflective aura of evening" },
-            
-            // Uncommon Auras
-            { name: "Stone", rarity: "UNCOMMON", description: "The strong aura of mountains" },
-            { name: "Stream", rarity: "UNCOMMON", description: "The persistent aura of rivers" },
-            { name: "Gale", rarity: "UNCOMMON", description: "The forceful aura of wind" },
-            { name: "Flame", rarity: "UNCOMMON", description: "The passionate aura of fire" },
-            { name: "Forest", rarity: "UNCOMMON", description: "The wild aura of nature" },
-            { name: "Night", rarity: "UNCOMMON", description: "The mysterious aura of darkness" },
-            { name: "Morning", rarity: "UNCOMMON", description: "The energetic aura of sunrise" },
-            { name: "Evening", rarity: "UNCOMMON", description: "The tranquil aura of sunset" },
-            { name: "Cloud", rarity: "UNCOMMON", description: "The dreamy aura of the sky" },
-            { name: "Frost", rarity: "UNCOMMON", description: "The cool aura of winter" },
-            
-            // Rare Auras
-            { name: "Mountain", rarity: "RARE", description: "The majestic aura of peaks" },
-            { name: "Ocean", rarity: "RARE", description: "The vast aura of seas" },
-            { name: "Hurricane", rarity: "RARE", description: "The chaotic aura of storms" },
-            { name: "Blaze", rarity: "RARE", description: "The intense aura of inferno" },
-            { name: "Jungle", rarity: "RARE", description: "The lush aura of wilderness" },
-            { name: "Abyss", rarity: "RARE", description: "The deep aura of void" },
-            { name: "Daybreak", rarity: "RARE", description: "The brilliant aura of dawn" },
-            { name: "Twilight", rarity: "RARE", description: "The fading aura of dusk" },
-            { name: "Thunder", rarity: "RARE", description: "The electric aura of storms" },
-            { name: "Crystal", rarity: "RARE", description: "The clear aura of purity" },
-            { name: "Moon", rarity: "RARE", description: "The serene aura of night" },
-            { name: "Star", rarity: "RARE", description: "The twinkling aura of space" },
-            
-            // Epic Auras
-            { name: "Terra Nova", rarity: "EPIC", description: "The reborn aura of earth" },
-            { name: "Tsunami", rarity: "EPIC", description: "The overwhelming aura of water" },
-            { name: "Tempest", rarity: "EPIC", description: "The untamable aura of wind" },
-            { name: "Inferno", rarity: "EPIC", description: "The consuming aura of fire" },
-            { name: "Genesis", rarity: "EPIC", description: "The primordial aura of creation" },
-            { name: "Eclipse", rarity: "EPIC", description: "The shadowed aura of celestial union" },
-            { name: "Void", rarity: "EPIC", description: "The empty aura of nothingness" },
-            { name: "Aurora", rarity: "EPIC", description: "The dancing aura of sky lights" },
-            
-            // Legendary Auras
-            { name: "Terra Firma", rarity: "LEGENDARY", description: "The foundation aura of existence" },
-            { name: "Maelstrom", rarity: "LEGENDARY", description: "The all-consuming aura of water" },
-            { name: "Hurricane Force", rarity: "LEGENDARY", description: "The devastating aura of air" },
-            { name: "Eternal Flame", rarity: "LEGENDARY", description: "The undying aura of fire" },
-            { name: "Ancient One", rarity: "LEGENDARY", description: "The timeless aura of ages" },
-            { name: "Celestial Body", rarity: "LEGENDARY", description: "The heavenly aura of stars" },
-            
-            // Mythic Auras
-            { name: "World Soul", rarity: "MYTHIC", description: "The conscious aura of planets" },
-            { name: "Ocean's Heart", rarity: "MYTHIC", description: "The deep aura of all seas" },
-            { name: "Skyfather", rarity: "MYTHIC", description: "The lordly aura of the heavens" },
-            { name: "Phoenix Force", rarity: "MYTHIC", description: "The rebirthing aura of flames" },
-            { name: "Cosmic Tree", rarity: "MYTHIC", description: "The connecting aura of all life" },
-            
-            // Cosmic Auras
-            { name: "Universal Truth", rarity: "COSMIC", description: "The fundamental aura of reality" },
-            { name: "Infinite Void", rarity: "COSMIC", description: "The boundless aura of space" },
-            { name: "Astral Essence", rarity: "COSMIC", description: "The spiritual aura of existence" },
-            
-            // Divine Auras
-            { name: "Alpha & Omega", rarity: "DIVINE", description: "The ultimate aura of creation and destruction" },
-            { name: "Sol's Light", rarity: "DIVINE", description: "The supreme aura of divinity" }
-        ];
-        
-        // Game state
-        const gameState = {
-            totalRolls: 0,
-            inventory: {},
-            rarestAura: null,
-            luckLevel: 0,
-            pityPoints: 0,
-            pityMax: 100,
-            currentAura: null,
-            sortMethod: "rarity",
-            rolling: false
-        };
-        
-        // Calculate luck boost based on luck level and pity points
-        function calculateLuckBoost() {
-            const luckBoost = gameState.luckLevel * 0.1;
-            const pityBoost = (gameState.pityPoints / gameState.pityMax) * 0.5;
-            return luckBoost + pityBoost;
-        }
-        
-        // Update pity points based on rolled aura
-        function updatePityPoints(aura) {
-            const rarityIndex = RARITY_ORDER.indexOf(aura.rarity);
-            
-            // Pity increases more for common auras
-            if (rarityIndex >= RARITY_ORDER.indexOf("UNCOMMON")) {
-                gameState.pityPoints += 10;
-            } else if (rarityIndex >= RARITY_ORDER.indexOf("RARE")) {
-                gameState.pityPoints += 5;
-            } else if (rarityIndex >= RARITY_ORDER.indexOf("EPIC")) {
-                gameState.pityPoints += 2;
-            } else {
-                // No pity for high rarity rolls
-                gameState.pityPoints = 0;
-            }
-            
-            // Cap pity
-            if (gameState.pityPoints > gameState.pityMax) {
-                gameState.pityPoints = gameState.pityMax;
-                // Level up luck if maxed
-                if (Math.random() < 0.1) {
-                    gameState.luckLevel++;
-                    gameState.pityPoints = 0;
-                }
-            }
-        }
-        
-        // Update rarest aura obtained
-        function updateRarestAura(aura) {
-            const currentRarityIndex = gameState.rarestAura ? 
-                RARITY_ORDER.indexOf(gameState.rarestAura.rarity) : 
-                RARITY_ORDER.length - 1;
-                
-            const newRarityIndex = RARITY_ORDER.indexOf(aura.rarity);
-            
-            if (newRarityIndex < currentRarityIndex) {
-                gameState.rarestAura = aura;
-            }
-        }
-        
-        // Create inventory item
-        function createInventoryItem(invItem) {
-            const { aura, count } = invItem;
-            const rarity = RARITIES[aura.rarity];
-            
-            const item = document.createElement('div');
-            item.className = 'inventory-item';
-            
-            const glow = document.createElement('div');
-            glow.className = 'inv-aura-glow';
-            glow.style.backgroundColor = rarity.color;
-            
-            const name = document.createElement('div');
-            name.className = `inv-name ${rarity.class}`;
-            name.textContent = aura.name;
-            
-            const rarityBadge = document.createElement('div');
-            rarityBadge.className = `rarity-badge ${rarity.class}`;
-            rarityBadge.textContent = rarity.name;
-            
-            const countElem = document.createElement('div');
-            countElem.className = 'inv-count';
-            countElem.textContent = `×${count}`;
-            
-            item.appendChild(glow);
-            item.appendChild(name);
-            item.appendChild(rarityBadge);
-            item.appendChild(countElem);
-            
-            // Show aura details on click
-            item.addEventListener('click', () => {
-                displayAura(aura);
-            });
-            
-            return item;
-        }
-
-        // DOM Elements
-        const rollButton = document.getElementById('roll-button');
-        const auraDisplay = document.querySelector('.aura-display');
-        const auraGlow = document.querySelector('.aura-glow');
-        const auraName = document.querySelector('.aura-name');
-        const auraRarity = document.querySelector('.aura-rarity');
-        const totalRollsElement = document.getElementById('total-rolls');
-        const rarestAuraElement = document.getElementById('rarest-aura');
-        const uniqueAurasElement = document.getElementById('unique-auras');
-        const luckLevelElement = document.getElementById('luck-level');
-        const pityPointsElement = document.getElementById('pity-points');
-        const pityMaxElement = document.getElementById('pity-max');
-        const luckEffectElement = document.getElementById('luck-effect');
-        const luckFill = document.querySelector('.luck-fill');
-        const inventoryGrid = document.getElementById('inventory-grid');
-        const sortButtons = document.querySelectorAll('.sort-button');
-        
-        // Roll for a new aura
-        function rollAura() {
-            if (gameState.rolling) return;
-            gameState.rolling = true;
-            
-            // Animation
-            auraDisplay.classList.add('rolling');
-            auraName.textContent = "...";
-            auraRarity.textContent = "Rolling...";
-            auraGlow.style.backgroundColor = "#777";
-            
-            // Disable button during roll
-            rollButton.disabled = true;
-            
-            // Simulate rolling delay
-            setTimeout(() => {
-                // Increment roll counter
-                gameState.totalRolls++;
-                
-                // Calculate luck boost
-                const luckBoost = calculateLuckBoost();
-                
-                // Get a random aura based on rarity probabilities and luck
-                const rolledAura = getRandomAura(luckBoost);
-                gameState.currentAura = rolledAura;
-                
-                // Add to inventory
-                if (!gameState.inventory[rolledAura.name]) {
-                    gameState.inventory[rolledAura.name] = {
-                        aura: rolledAura,
-                        count: 0
-                    };
-                }
-                gameState.inventory[rolledAura.name].count++;
-                
-                // Update rarest aura if applicable
-                updateRarestAura(rolledAura);
-                
-                // Update pity points
-                updatePityPoints(rolledAura);
-                
-                // Display the result
-                displayAura(rolledAura);
-                
-                // Update all stats displays
-                updateAllDisplays();
-                
-                // Save game
-                saveGame();
-                
-                // Re-enable button
-                rollButton.disabled = false;
-                gameState.rolling = false;
-                
-            }, 1000);
-        }
-        
-        // Get random aura based on rarity probabilities
-        function getRandomAura(luckBoost = 0) {
-            // Apply luck boost to probabilities
-            const adjustedRarities = {};
-            let totalChance = 0;
-            
-            for (const [key, rarity] of Object.entries(RARITIES)) {
-                // For Common, actually reduce chance as luck increases
-                if (key === "COMMON") {
-                    adjustedRarities[key] = Math.max(0.1, rarity.chance - (luckBoost * 0.05));
-                } 
-                // For others, increase chance as luck increases
-                else {
-                    let boost = luckBoost;
-                    
-                    // Higher boosts for rarer tiers
-                    if (key === "DIVINE") boost *= 2;
-                    if (key === "COSMIC") boost *= 1.8;
-                    if (key === "MYTHIC") boost *= 1.5;
-                    if (key === "LEGENDARY") boost *= 1.2;
-                    
-                    adjustedRarities[key] = rarity.chance * (1 + boost);
-                }
-                
-                totalChance += adjustedRarities[key];
-            }
-            
-            // Normalize to ensure total is 1.0
-            for (const key in adjustedRarities) {
-                adjustedRarities[key] /= totalChance;
-            }
-            
-            // Roll for rarity
-            const randValue = Math.random();
-            let cumulativeChance = 0;
-            let selectedRarity = "COMMON"; // Default
-            
-            for (const rarity in adjustedRarities) {
-                cumulativeChance += adjustedRarities[rarity];
-                if (randValue <= cumulativeChance) {
-                    selectedRarity = rarity;
-                    break;
-                }
-            }
-            
-            // Get all auras of the selected rarity
-            const possibleAuras = AURAS.filter(aura => aura.rarity === selectedRarity);
-            
-            // Select one randomly
-            return possibleAuras[Math.floor(Math.random() * possibleAuras.length)];
-        }
-
-        // Display an aura in the main display
-        function displayAura(aura) {
-            const rarity = RARITIES[aura.rarity];
-            
-            auraDisplay.classList.remove('rolling');
-            auraName.textContent = aura.name;
-            auraRarity.textContent = rarity.name;
-            auraGlow.style.backgroundColor = rarity.color;
-            
-            // Clear existing classes
-            auraName.className = 'aura-name';
-            auraRarity.className = 'aura-rarity';
-            
-            // Add rarity class
-            auraName.classList.add(rarity.class);
-            auraRarity.classList.add(rarity.class);
-            
-            // Special effects for rare+ auras
-            if (RARITY_ORDER.indexOf(aura.rarity) <= RARITY_ORDER.indexOf("EPIC")) {
-                auraDisplay.style.boxShadow = `0 0 30px ${rarity.color}`;
-                
-                // Extra animation for legendary+ auras
-                if (RARITY_ORDER.indexOf(aura.rarity) <= RARITY_ORDER.indexOf("LEGENDARY")) {
-                    const keyframes = `
-                    @keyframes pulse-${rarity.class} {
-                        0% { transform: scale(1); }
-                        50% { transform: scale(1.05); }
-                        100% { transform: scale(1); }
-                    }`;
-                    
-                    // Add keyframes to document
-                    const style = document.createElement('style');
-                    style.innerHTML = keyframes;
-                    document.head.appendChild(style);
-                    
-                    // Apply animation
-                    auraDisplay.style.animation = `pulse-${rarity.class} 2s infinite`;
-                }
-            } else {
-                auraDisplay.style.boxShadow = '';
-                auraDisplay.style.animation = '';
-            }
-        }
-        
-        // Update all displays
-        function updateAllDisplays() {
-            updateStatsDisplay();
-            updateLuckDisplay();
-            updateInventoryDisplay();
-        }
-  
-  // Update stats panel
-        function updateStatsDisplay() {
-            totalRollsElement.textContent = `Total Rolls: ${gameState.totalRolls}`;
-            
-            if (gameState.rarestAura) {
-                const rarity = RARITIES[gameState.rarestAura.rarity];
-                rarestAuraElement.textContent = `Rarest Aura: ${gameState.rarestAura.name} (${rarity.name})`;
-                rarestAuraElement.className = rarity.class;
-            } else {
-                rarestAuraElement.textContent = "Rarest Aura: None";
-                rarestAuraElement.className = "";
-            }
-            
-            const uniqueCount = Object.keys(gameState.inventory).length;
-            uniqueAurasElement.textContent = `Unique Auras: ${uniqueCount}/${AURAS.length}`;
-        }
-        
-        // Update luck panel
-        function updateLuckDisplay() {
-            luckLevelElement.textContent = gameState.luckLevel;
-            pityPointsElement.textContent = gameState.pityPoints;
-            pityMaxElement.textContent = gameState.pityMax;
-            
-            // Update luck meter
-            const fillPercentage = (gameState.pityPoints / gameState.pityMax) * 100;
-            luckFill.style.width = `${fillPercentage}%`;
-            
-            // Update luck effect text
-            const luckBoost = calculateLuckBoost();
-            if (luckBoost <= 0) {
-                luckEffectElement.textContent = "Current Effect: None";
-            } else {
-                const boostPercent = Math.round(luckBoost * 100);
-                luckEffectElement.textContent = `Current Effect: +${boostPercent}% rare aura chance`;
-            }
-        }
-        
-        // Update inventory display
-        function updateInventoryDisplay() {
-            // Clear inventory
-            inventoryGrid.innerHTML = "";
-            
-            // Get array of inventory items
-            let inventoryArray = Object.values(gameState.inventory);
-            
-            // Sort inventory based on current sort method
-            switch (gameState.sortMethod) {
-                case "name":
-                    inventoryArray.sort((a, b) => a.aura.name.localeCompare(b.aura.name));
-                    break;
-                case "count":
-                    inventoryArray.sort((a, b) => b.count - a.count);
-                    break;
-                case "rarity":
-                default:
-                    // Complete the sorting functionality that was cut off
-inventoryArray.sort((a, b) => {
-    const rarityA = RARITY_ORDER.indexOf(a.aura.rarity);
-    const rarityB = RARITY_ORDER.indexOf(b.aura.rarity);
-    return rarityA - rarityB;
-});
-break;
+  );
 }
 
-// Add sorted items to inventory grid
-inventoryArray.forEach(item => {
-    const itemElement = createInventoryItem(item);
-    inventoryGrid.appendChild(itemElement);
-});
+const navLinks = [
+  { id: "materials", label: "Materials" },
+  { id: "why", label: "Why Choose This?" },
+  { id: "creators", label: "Creators" },
+  { id: "about", label: "About" },
+  { id: "design", label: "Design" },
+];
+
+const sections = [
+  {
+    id: "materials",
+    title: "Materials",
+    content: (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <MaterialCard
+          title="Bamboo Fiber Shell"
+          desc="This is the tough outside part. Bamboo grows fast and is really strong, so it's great for keeping your head safe."
+        />
+        <MaterialCard
+          title="Cork Foam Padding"
+          desc="This soft foam is inside the helmet. It helps protect your head if you fall. It's made from cork trees and feels squishy."
+        />
+        <MaterialCard
+          title="Organic Cotton Lining"
+          desc="This soft cotton touches your head. It feels comfy and doesn’t use any bad chemicals to grow."
+        />
+        <MaterialCard
+          title="Plant-Based Resin"
+          desc="This is a sticky glue made from plants, like tree sap. It holds everything in the helmet together."
+        />
+      </div>
+    ),
+  },
+  {
+    id: "why",
+    title: "Why Choose This Helmet?",
+    content:
+      "This helmet is not just protective but sustainable. Every material is renewable, eco-friendly, and supports a greener future while still being effective in absorbing shocks and providing comfort.",
+  },
+  {
+    id: "creators",
+    title: "Creators",
+    content: "Developed with care and innovation by Ayaan Farooq and Harrison Vessel.",
+  },
+  {
+    id: "about",
+    title: "About the EcoGuard Project",
+    content:
+      "Our goal is to create safer, sustainable protective gear by using natural resources wisely. The EcoGuard Helmet is designed to be strong, lightweight, and biodegradable wherever possible.",
+  },
+  {
+    id: "design",
+    title: "Design",
+    content: (
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <img
+          src=""
+          alt="Design Image 1"
+          className="rounded-lg border border-green-300 hover:scale-105 transition-transform"
+        />
+        <img
+          src=""
+          alt="Design Image 2"
+          className="rounded-lg border border-green-300 hover:scale-105 transition-transform"
+        />
+        <img
+          src=""
+          alt="Design Image 3"
+          className="rounded-lg border border-green-300 hover:scale-105 transition-transform"
+        />
+      </div>
+    ),
+  },
+];
+
+function MaterialCard({ title, desc }) {
+  return (
+    <motion.div
+      whileHover={{ scale: 1.05, rotate: 1 }}
+      className="bg-white rounded-2xl shadow-lg p-6 transition-all duration-300 border border-green-200"
+    >
+      <h3 className="text-lg font-bold text-green-800 mb-2">{title}</h3>
+      <p className="text-green-700 leading-relaxed">{desc}</p>
+    </motion.div>
+  );
 }
 
-// Handle sort button clicks
-sortButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        // Update sort method
-        gameState.sortMethod = button.dataset.sort;
-        
-        // Update inventory display with new sort
-        updateInventoryDisplay();
-        
-        // Update button styling
-        sortButtons.forEach(btn => btn.classList.remove('active'));
-        button.classList.add('active');
-    });
-});
-
-// Save game state to local storage
-function saveGame() {
-    localStorage.setItem('solAuraRoller', JSON.stringify({
-        totalRolls: gameState.totalRolls,
-        inventory: gameState.inventory,
-        rarestAura: gameState.rarestAura,
-        luckLevel: gameState.luckLevel,
-        pityPoints: gameState.pityPoints
-    }));
-}
-
-// Load game state from local storage
-function loadGame() {
-    const savedData = localStorage.getItem('solAuraRoller');
-    
-    if (savedData) {
-        const parsed = JSON.parse(savedData);
-        
-        gameState.totalRolls = parsed.totalRolls || 0;
-        gameState.inventory = parsed.inventory || {};
-        gameState.rarestAura = parsed.rarestAura || null;
-        gameState.luckLevel = parsed.luckLevel || 0;
-        gameState.pityPoints = parsed.pityPoints || 0;
-        
-        // Update all displays with loaded data
-        updateAllDisplays();
-        
-        // If there was a current aura, display it
-        if (parsed.currentAura) {
-            displayAura(parsed.currentAura);
-        }
-    }
-}
-
-// Initialize the game
-function initGame() {
-    // Load saved game
-    loadGame();
-    
-    // Setup event listeners
-    rollButton.addEventListener('click', rollAura);
-    
-    // Set default sort method button as active
-    document.querySelector(`[data-sort="${gameState.sortMethod}"]`).classList.add('active');
-    
-    // Initial display updates
-    updateAllDisplays();
-}
-
-// Start the game when page loads
-window.addEventListener('DOMContentLoaded', initGame);
