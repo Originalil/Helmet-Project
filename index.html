@@ -1,96 +1,907 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Eco Helmet</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <style>
-    .tab-content { display: none; }
-    .active-tab { display: block; }
-  </style>
+    <meta charset="UTF-8" />
+    <title>Mike and Ayaan's Store - Real-Time</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module" src="https://unpkg.com/lucide@^0.255.0/dist/esm/index.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.1/firebase-app-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.1/firebase-database-compat.min.js"></script>
+    <style>
+        /* Custom CSS for the order status tabs */
+        .order-status-tabs {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 1rem;
+        }
+        .order-status-tab {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem; /* Rounded corners */
+            cursor: pointer;
+            color: #6b7280; /* Gray 400 */
+            background-color: #f3f4f6; /* Gray 100 */
+            text-align: center;
+            flex: 1; /* Make tabs take equal space */
+            transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition */
+        }
+        .order-status-tab:hover {
+            background-color: #d1d5db; /* Gray 300 on hover */
+            color: #1f2937; /* Gray 800 on hover */
+        }
+        .order-status-tab.active {
+            background-color: #3b82f6; /* Blue 500 for active */
+            color: white;
+            font-weight: 600; /* Make active tab text bold */
+        }
+        .order-card.done {
+            background-color: #f0fdf4; /* Lightest green */
+            border-color: #34d399; /* A darker green */
+            color: #065f46;  /* very dark green */
+        }
+        .order-card.done h4 {
+            color: #065f46;
+        }
+    </style>
 </head>
-<body class="bg-green-50 font-sans">
-
-  <header class="bg-green-200 text-center py-8 shadow-md sticky top-0 z-40">
-    <h1 class="text-4xl font-bold text-green-800">Eco Helmet</h1>
-    <p class="text-green-700 mt-2">Our priority is not you, it's the helmet</p>
-  </header>
-
-  <nav class="bg-green-100 py-4 shadow-sm flex justify-center gap-6 text-green-700 font-semibold sticky top-20 z-30">
-    <button onclick="switchTab('materials')" class="hover:bg-green-200 px-3 py-1 rounded-full" id="tab-materials">Materials</button>
-    <button onclick="switchTab('why')" class="hover:bg-green-200 px-3 py-1 rounded-full" id="tab-why">Why Choose This?</button>
-    <button onclick="switchTab('creators')" class="hover:bg-green-200 px-3 py-1 rounded-full" id="tab-creators">How it Helps</button>
-    <button onclick="switchTab('about')" class="hover:bg-green-200 px-3 py-1 rounded-full" id="tab-about">About</button>
-    <button onclick="switchTab('design')" class="hover:bg-green-200 px-3 py-1 rounded-full" id="tab-design">Design</button>
-  </nav>
-
-  <main class="px-4 py-10 max-w-6xl mx-auto space-y-10">
-    <section id="materials" class="tab-content active-tab">
-      <h2 class="text-3xl font-extrabold text-green-700 mb-6 border-b-2 pb-2 border-green-300">Materials</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="bg-white rounded-2xl shadow-lg p-6 border border-green-200">
-          <h3 class="text-lg font-bold text-green-800 mb-2">Bamboo Fiber Shell</h3>
-          <p class="text-green-700">The outside part of the helmet is made from bamboo. Bamboo grows super fast, so it’s great for the environment. The bamboo is also tough and strong, which is perfect for protecting your head if you fall or crash.</p>
+<body class="p-6 space-y-8 bg-gradient-to-br from-pink-100 to-blue-100 min-h-screen">
+    <div class="flex justify-between items-center">
+        <h1 class="text-3xl font-bold">Mike and Ayaan's Store</h1>
+        <div class="text-sm bg-green-100 p-2 rounded border border-green-300">
+            <span id="connection-status">Connecting...</span>
         </div>
-        <div class="bg-white rounded-2xl shadow-lg p-6 border border-green-200">
-          <h3 class="text-lg font-bold text-green-800 mb-2">Cork Foam Padding</h3>
-          <p class="text-green-700">The inside padding is made from cork, which comes from trees. It’s soft, springy, and absorbs any impact.</p>
+    </div>
+
+    <div class="space-y-4">
+        <div id="category-tabs" class="flex gap-2 overflow-x-auto pb-2">
+            <!-- Category tabs will be rendered here -->
         </div>
-        <div class="bg-white rounded-2xl shadow-lg p-6 border border-green-200">
-          <h3 class="text-lg font-bold text-green-800 mb-2">Organic Cotton Lining</h3>
-          <p class="text-green-700">This part touches your head. It’s made from soft organic cotton, grown naturally, and it has a nice feel for comfort.</p>
+        <div id="product-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+    </div>
+
+    <div class="p-4 border rounded bg-white shadow space-y-4">
+        <h2 class="text-xl font-bold">Your Cart</h2>
+        <div id="cart-items"></div>
+        <div id="cart-summary" class="space-y-2 hidden">
+            <p><strong>Subtotal:</strong> $<span id="subtotal">0.00</span></p>
+            <p><strong>Delivery Fee:</strong> $<span id="deliveryFee">0.00</span></p>
+            <p><strong>Total:</strong> $<span id="total">0.00</span></p>
+            <input id="custName" class="w-full border rounded px-2 py-1" placeholder="Your Name" />
+            <input id="meetLoc" class="w-full border rounded px-2 py-1" placeholder="Meeting Location (optional)" />
+            <input id="meetTime" class="w-full border rounded px-2 py-1" placeholder="Meeting Time (optional)" />
+            <button id="checkoutBtn" class="mt-2 w-full bg-blue-500 text-white py-2 rounded">Checkout</button>
         </div>
-        <div class="bg-white rounded-2xl shadow-lg p-6 border border-green-200">
-          <h3 class="text-lg font-bold text-green-800 mb-2">Plant Based Resin</h3>
-          <p class="text-green-700">This is the natural glue that holds the helmet together. It’s made from things most commonly like tree sap.</p>
+    </div>
+
+    <div id="passwordModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-80 space-y-4">
+            <h3 class="text-xl font-bold text-center">Enter Password</h3>
+            <input id="passwordInput" type="password" class="w-full border-2 border-blue-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500" placeholder="Password" />
+            <div class="flex gap-3">
+                <button id="cancelPasswordBtn" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 rounded">Cancel</button>
+                <button id="submitPasswordBtn" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded">Submit</button>
+            </div>
         </div>
-      </div>
-    </section>
+    </div>
 
-    <section id="why" class="tab-content">
-      <h2 class="text-3xl font-extrabold text-green-700 mb-6 border-b-2 pb-2 border-green-300">Why Choose This Helmet?</h2>
-      <p class="text-green-900 leading-relaxed text-lg">
-        Most helmets are made with a lot of plastic, which contributes to the 8 million pieces of plastic thrown into the ocean. This helmet is created with materials that come from nature and break down over time, so they don’t pollute the Earth. 
-      </p>
-    </section>
+    <div id="controlPanel" class="fixed inset-0 bg-white z-50 p-6 overflow-auto hidden">
+        <button id="closePanel" class="mb-4 px-3 py-1 bg-gray-200 rounded">Close</button>
+        <h2 class="text-2xl font-bold mb-4">Control Panel</h2>
+        <button id="resetBtn" class="mb-6 px-3 py-1 bg-red-400 text-white rounded">Reset Everything</button>
 
-    <section id="creators" class="tab-content">
-      <h2 class="text-3xl font-extrabold text-green-700 mb-6 border-b-2 pb-2 border-green-300">How it helps the earth.</h2>
-      <p class="list-disc list-inside text-green-900 text-lg">
-        Our helmet helps preserve the earth, because instead of using materials like plastic or synthetic materials that hurt the earth, we use all-natural resources like bamboo, cork, plant resin, and organic cotton. It reduces the plastic in oceans by a ton!
-      </p>
-    </section>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="text-lg font-semibold mb-2">Stock Management</h3>
+                <div id="stock-management"></div>
+                <div class="mt-4 space-y-2">
+                    <input id="newName" class="w-full border rounded px-2 py-1" placeholder="New Item Name" />
+                    <input id="newQty" type="number" class="w-full border rounded px-2 py-1" placeholder="Quantity" />
+                    <input id="newPrice" type="number" step="0.01" class="w-full border rounded px-2 py-1" placeholder="Price ($)" />
+                    <button id="addNewItemBtn" class="w-full bg-green-500 text-white py-2 rounded">Add Item</button>
+                </div>
+            </div>
 
-    <section id="about" class="tab-content">
-      <h2 class="text-3xl font-extrabold text-green-700 mb-6 border-b-2 pb-2 border-green-300">About the EcoGuard Project</h2>
-      <p class="text-green-900 leading-relaxed text-lg">
-        This helmet took days of research to find the specific materials good enough for an all-natural helmet. The helmet comes in multiple colors, and was made to be a perfect fit, without looking like a cheap and bulky helmet.
-      </p>
-    </section>
+            <div>
+                <h3 class="text-lg font-semibold mb-2">Orders</h3>
+                <div id="order-status-filter" class="order-status-tabs">
+                    <div class="order-status-tab active" data-status="all">All</div>
+                    <div class="order-status-tab" data-status="pending">Pending</div>
+                    <div class="order-status-tab" data-status="done">Done</div>
+                </div>
+                <div id="orders-list"></div>
+            </div>
+        </div>
+    </div>
 
-    <section id="design" class="tab-content">
-      <h2 class="text-3xl font-extrabold text-green-700 mb-6 border-b-2 pb-2 border-green-300">Design</h2>
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <img src="https://i.postimg.cc/V5HGrfBh/temp-Imageh5-Fl-X5.avif" alt="Eco Helmet Front View" />
-        <img src="design2.png" alt="Eco Helmet Side View" class="rounded-lg border border-green-300 hover:scale-105 transition-transform" />
-      </div>
-      <p class="text-green-800 mt-4 text-lg">
+    <script>
+        // --- Firebase Configuration ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBZ-F3bIRCW-MvUJIyWJTaHVUN8yX5ZIPI",
+            authDomain: "snackstore-9d638.firebaseapp.com",
+            databaseURL: "https://snackstore-9d638-default-rtdb.firebaseio.com",
+            projectId: "snackstore-9d638",
+            storageBucket: "snackstore-9d638.firebasestorage.app",
+            messagingSenderId: "912326045766",
+            appId: "1:912326045766:web:5d907ced9d58d57bc59a47"
+        };
 
-        By Ayaan and Harrison, also full google doc for the images:
-        
-        <a href="https://docs.google.com/document/d/1HSGrpqrjX9B_X0KPb2YF0I_qA89wdEjS3LGn_z7oWpg/edit?usp=sharing" target="_blank" class="text-blue-600 underline hover:text-blue-800">
-        </a>
-      </p>
-    </section>
-  </main>
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const connectionStatus = document.getElementById('connection-status');
 
-  <script>
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active-tab'));
-      document.getElementById(tabId).classList.add('active-tab');
-    }
-  </script>
+        // Check connection
+        const connectedRef = firebase.database().ref(".info/connected");
+        connectedRef.on("value", (snap) => {
+            if (snap.val() === true) {
+                connectionStatus.textContent = "Connected to store!";
+                connectionStatus.classList.add("text-green-600");
+            } else {
+                connectionStatus.textContent = "Disconnected. Trying to reconnect...";
+                connectionStatus.classList.add("text-red-600");
+            }
+        });
+
+        const initialCategories = [
+            "All",
+            "Chocolate",
+            "Hard Candy",
+            "Gummies",
+            "Sour"
+        ];
+
+        const initialStock = {
+            "Reese's PB Cups": { quantity: 11, price: 1.00, category: "Chocolate" },
+            "KitKat": { quantity: 7, price: 1.00, category: "Chocolate" },
+            "Trolli Sour Brite Crawlers Minis": { quantity: 1, price: 1.00, category: "Gummies" }
+        };
+
+        function initializeFirebase() {
+            // Initialize categories
+            database.ref('categories').once('value').then((snapshot) => {
+                if (!snapshot.exists()) {
+                    database.ref('categories').set(initialCategories);
+                }
+            });
+
+            database.ref('stock').once('value').then((snapshot) => {
+                if (!snapshot.exists()) {
+                    database.ref('stock').set(initialStock);
+                } else {
+                    // Check if we need to update the format from old (quantity only) to new (quantity and price)
+                    const currentStock = snapshot.val();
+                    let needsUpdate = false;
+
+                    for (const [item, value] of Object.entries(currentStock)) {
+                        if (typeof value === 'number' || !value.price) {
+                            // Convert old format to new format
+                            currentStock[item] = {
+                                quantity: typeof value === 'number' ? value : (value.quantity || 0),
+                                price: 1.00
+                            };
+                            needsUpdate = true;
+                        }
+                    }
+
+                    if (needsUpdate) {
+                        database.ref('stock').set(currentStock);
+                    }
+                }
+            });
+        }
+
+        const state = {
+            cart: {},
+            stock: {},
+            prices: {}, // Stores prices for items
+            localStock: {}, // For tracking local-only stock changes
+            orders: [],
+            name: "",
+            meetLocation: "",
+            meetTime: "",
+            orderStatusFilter: 'all', // Added for order status filtering
+            categories: [], // Store categories
+            selectedCategory: 'All' // Currently selected category
+        };
+
+        // --- 3. DOM Refs ---
+        const productGrid = document.getElementById("product-grid");
+        const cartItemsDiv = document.getElementById("cart-items");
+        const cartSummary = document.getElementById("cart-summary");
+        const subtotalEl = document.getElementById("subtotal");
+        const deliveryFeeEl = document.getElementById("deliveryFee");
+        const totalEl = document.getElementById("total");
+        const checkoutBtn = document.getElementById("checkoutBtn");
+        const custNameInput = document.getElementById("custName");
+        const meetLocInput = document.getElementById("meetLoc");
+        const meetTimeInput = document.getElementById("meetTime");
+
+        const controlPanel = document.getElementById("controlPanel");
+        const resetBtn = document.getElementById("resetBtn");
+        const stockMgmtDiv = document.getElementById("stock-management");
+        const addNewItemBtn = document.getElementById("addNewItemBtn");
+        const newNameInput = document.getElementById("newName");
+        const newQtyInput = document.getElementById("newQty");
+        const newPriceInput = document.getElementById("newPrice");
+        const ordersListDiv = document.getElementById("orders-list");
+        const orderStatusFilterDiv = document.getElementById("order-status-filter"); // Get the filter div
+        document.getElementById("closePanel").onclick = () => controlPanel.classList.add("hidden");
+
+        // Password modal refs
+        const passwordModal = document.getElementById("passwordModal");
+        const passwordInput = document.getElementById("passwordInput");
+        const submitPasswordBtn = document.getElementById("submitPasswordBtn");
+        const cancelPasswordBtn = document.getElementById("cancelPasswordBtn");
+
+        // --- 4. Render Functions ---
+        function renderCategories() {
+            const categoryTabs = document.getElementById('category-tabs');
+            categoryTabs.innerHTML = '';
+            
+            state.categories.forEach(category => {
+                const tab = document.createElement('button');
+                tab.className = `px-4 py-2 rounded-full ${state.selectedCategory === category ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300'}`;
+                tab.textContent = category;
+                tab.onclick = () => {
+                    state.selectedCategory = category;
+                    renderCategories();
+                    renderProducts();
+                };
+                categoryTabs.appendChild(tab);
+            });
+        }
+
+        function renderProducts() {
+            productGrid.innerHTML = "";
+            for (let [item, itemData] of Object.entries(state.stock)) {
+                // Filter by category
+                if (state.selectedCategory !== 'All' && itemData.category !== state.selectedCategory) continue;
+                // Use localStock for display if available
+                const localQty = state.localStock[item]?.quantity !== undefined ? state.localStock[item].quantity : (state.stock[item]?.quantity || 0);
+                const price = state.stock[item]?.price || 1.00;
+
+                const card = document.createElement("div");
+                card.className = "bg-white shadow-xl rounded-2xl";
+                card.innerHTML = `
+                    <div class="p-4 space-y-3 text-center">
+                        <h2 class="text-lg font-semibold">${item}</h2>
+                        <p class="text-sm text-gray-500">${itemData.category || 'Uncategorized'}</p>
+                        <p class="text-sm">In Stock: ${localQty}</p>
+                        <p class="text-sm">Price: $${price.toFixed(2)}</p>
+                        <button class="w-full px-2 py-1 mt-2 rounded text-white ${localQty === 0 ? 'bg-gray-400' : 'bg-blue-500'}" ${localQty === 0 ? 'disabled' : ''}>
+                            ${localQty === 0 ? 'Out of Stock' : 'Add to Cart'}
+                        </button>
+                    </div>`;
+                const btn = card.querySelector("button");
+                if (localQty > 0) {
+                    btn.onclick = () => { addToCart(item); };
+                }
+                productGrid.appendChild(card);
+            }
+        }
+
+        function renderCart() {
+            cartItemsDiv.innerHTML = "";
+            const entries = Object.entries(state.cart);
+            if (entries.length === 0) {
+                cartSummary.classList.add("hidden");
+                return;
+            }
+            cartSummary.classList.remove("hidden");
+
+            entries.forEach(([item, qty]) => {
+                // Get price for this item
+                const price = state.stock[item]?.price || 1.00;
+
+                const row = document.createElement("div");
+                row.className = "flex justify-between items-center mb-1";
+                row.innerHTML = `
+                    <span>${item}: ${qty} × $${price.toFixed(2)}</span>
+                    <div class="flex gap-2">
+                        <button class="px-2 py-1 bg-blue-400 rounded">+</button>
+                        <button class="px-2 py-1 bg-red-400 rounded">-</button>
+                    </div>`;
+                row.querySelectorAll("button")[0].onclick = () => addToCart(item);
+                row.querySelectorAll("button")[1].onclick = () => removeFromCart(item);
+                cartItemsDiv.appendChild(row);
+            });
+
+            // Calculate subtotal based on price of each item
+            const sub = entries.reduce((sum, [item, qty]) => {
+                const price = state.stock[item]?.price || 1.00;
+                return sum + (price * qty);
+            }, 0);
+
+            const fee = entries.length > 0 ? 0.25 : 0;
+            subtotalEl.textContent = sub.toFixed(2);
+            deliveryFeeEl.textContent = fee.toFixed(2);
+            totalEl.textContent = (sub + fee).toFixed(2);
+        }
+
+        function renderControlPanel() {
+            // Stock Management
+            stockMgmtDiv.innerHTML = "";
+
+            // Add header row
+            // Add category management section
+            const categorySection = document.createElement('div');
+            categorySection.className = 'mb-8';
+            categorySection.innerHTML = `
+                <h3 class="text-lg font-bold mb-4">Category Management</h3>
+                <div class="flex gap-2 mb-4">
+                    <input id="newCategory" class="border rounded px-2 py-1" placeholder="New Category Name">
+                    <button id="addCategoryBtn" class="px-4 py-1 bg-green-500 text-white rounded">Add Category</button>
+                </div>
+                <div id="categoryList" class="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4"></div>
+            `;
+            stockMgmtDiv.appendChild(categorySection);
+
+            // Render existing categories
+            const categoryList = categorySection.querySelector('#categoryList');
+            state.categories.forEach(category => {
+                if (category === 'All') return; // Skip the 'All' category as it's special
+                const categoryItem = document.createElement('div');
+                categoryItem.className = 'flex justify-between items-center p-2 bg-gray-100 rounded';
+                categoryItem.innerHTML = `
+                    <span>${category}</span>
+                    <button class="text-red-500 hover:text-red-700">×</button>
+                `;
+                categoryItem.querySelector('button').onclick = () => deleteCategory(category);
+                categoryList.appendChild(categoryItem);
+            });
+
+            // Add new category button handler
+            categorySection.querySelector('#addCategoryBtn').onclick = addNewCategory;
+
+            const header = document.createElement("div");
+            header.className = "flex items-center gap-2 mb-2 font-bold";
+            header.innerHTML = `
+                <span class="w-48">Item Name</span>
+                <span class="w-24">Quantity</span>
+                <span class="w-24">Price ($)</span>
+                <span class="w-32">Category</span>
+                <span class="w-24">Actions</span>
+            `;
+            stockMgmtDiv.appendChild(header);
+
+            for (let [item, itemData] of Object.entries(state.stock)) {
+                const qty = itemData.quantity || 0;
+                const price = itemData.price || 1.00;
+
+                const row = document.createElement("div");
+                row.className = "flex items-center gap-2 mb-2";
+                row.innerHTML = `
+                    <span class="w-48 truncate">${item}</span>
+                    <input type="number" class="border rounded px-1 w-24" value="${qty}" min="0" />
+                    <input type="number" step="0.01" class="border rounded px-1 w-24" value="${price.toFixed(2)}" min="0.01" />
+                    <select class="border rounded px-1 w-32">
+                        ${state.categories.filter(cat => cat !== 'All').map(cat => 
+                            `<option value="${cat}" ${itemData.category === cat ? 'selected' : ''}>${cat}</option>`
+                        ).join('')}
+                    </select>
+                    <button class="px-2 py-1 bg-red-500 text-white rounded w-24">Remove</button>
+                `;
+
+                const qtyInput = row.querySelectorAll("input")[0];
+                const priceInput = row.querySelectorAll("input")[1];
+                const categorySelect = row.querySelector("select");
+                const removeBtn = row.querySelector("button");
+
+                qtyInput.onchange = () => {
+                    const newValue = parseInt(qtyInput.value) || 0;
+                    database.ref(`stock/${item}/quantity`).set(newValue);
+                };
+
+                priceInput.onchange = () => {
+                    const newValue = parseFloat(priceInput.value) || 1.00;
+                    database.ref(`stock/${item}/price`).set(Math.max(0.01, newValue));
+                };
+
+                categorySelect.onchange = () => {
+                    database.ref(`stock/${item}/category`).set(categorySelect.value);
+                };
+
+                removeBtn.onclick = () => {
+                    showConfirmDialog(`Are you sure you want to remove "${item}" from the inventory?`, () => {
+                        database.ref(`stock/${item}`).remove();
+                        showCustomAlert(`"${item}" has been removed from inventory`);
+                    });
+                };
+
+                stockMgmtDiv.appendChild(row);
+            }
+
+            // Orders List
+            renderOrdersList();
+        }
+
+        function renderOrdersList() {
+            ordersListDiv.innerHTML = "";
+            const filteredOrders = state.orders.filter(order => {
+                if (state.orderStatusFilter === 'all') return true;
+                if (state.orderStatusFilter === 'pending') return !order.done;
+                if (state.orderStatusFilter === 'done') return order.done;
+                return true;
+            });
+
+            const grouped = {};
+            filteredOrders.forEach((ord, i) => {
+                const key = ord.name?.trim() || `Anonymous-${i}`;
+                grouped[key] = grouped[key] || [];
+                grouped[key].push({ ...ord, index: i });
+            });
+
+            Object.entries(grouped).forEach(([name, list]) => {
+                const h = document.createElement("h4");
+                h.className = "text-md font-bold mb-2";
+                h.textContent = `Orders by ${name}`;
+                ordersListDiv.appendChild(h);
+
+                list.forEach(order => {
+                    const card = document.createElement("div");
+                    card.className = `relative mb-4 p-4 border rounded-lg shadow-md space-y-2 order-card ${order.done ? 'done' : ''}`;
+
+                    // Header with price info
+                    let headerContent = `
+                        <div class="flex justify-between items-center border-b pb-2 mb-2">
+                            <h4 class="text-lg font-semibold">Order Details</h4>
+                            <div class="flex gap-2">
+                                <button class="text-green-500 hover:text-green-700 font-bold" onclick="markOrderDone(${order.index})">✓</button>
+                                <button class="text-xl font-bold text-red-500 hover:text-red-700" onclick="deleteOrder(${order.index})">×</button>
+                                ${order.done ? `<button class="text-blue-500 hover:text-blue-700 font-bold" onclick="markOrderUndone(${order.index})"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rotate-ccw"><path d="M3 12a9 9 0 1 1 9-9"/><path d="M9 15v-3h3"/></svg></button>` : ''}
+                            </div>
+                        </div>
+                    `;
+
+                    // Price information displayed prominently
+                    let priceInfo = `
+                        <div class="bg-blue-50 p-2 rounded mb-3">
+                            ${order.subtotal ? `<p><strong>Subtotal:</strong> $${order.subtotal}</p>` : ''}
+                            ${order.deliveryFee ? `<p><strong>Delivery Fee:</strong> $${order.deliveryFee}</p>` : ''}
+                            ${order.total ? `<p class="font-bold">Total: $${order.total}</p>` : ''}
+                        </div>
+                    `;
+
+                    // Delivery details
+                    let deliveryDetails = `
+                        <div class="bg-green-50 p-2 rounded mb-3">
+                            ${order.meetLocation ? `<p><strong>Meet at:</strong> ${order.meetLocation}</p>` : ''}
+                            ${order.meetTime ? `<p><strong>Time:</strong> ${order.meetTime}</p>` : ''}
+                        </div>
+                    `;
+
+                    card.innerHTML = headerContent + priceInfo + deliveryDetails;
+
+                    // Each item in order
+                    const itemsContainer = document.createElement("div");
+                    itemsContainer.className = "space-y-1";
+
+                    let hasItems = false;
+                    Object.entries(order).forEach(([k, v]) => {
+                        if (["name", "meetLocation", "meetTime", "index", "firebaseKey", "subtotal", "deliveryFee", "total", "done"].includes(k)) return;
+                        hasItems = true;
+
+                        const row = document.createElement("div");
+                        row.className = "flex justify-between items-center p-1 bg-gray-50 rounded";
+                        row.innerHTML = `
+                            <p class="font-medium">${k}: ${v}</p>
+                            <button class="px-2 py-1 bg-red-400 hover:bg-red-500 text-white rounded" onclick="removeItemFromOrder(${order.index},'${k}')">Remove</button>
+                        `;
+                        itemsContainer.appendChild(row);
+                    });
+
+                    if (hasItems) {
+                        const itemsHeader = document.createElement("h5");
+                        itemsHeader.className = "font-medium mt-3 mb-2";
+                        itemsHeader.textContent = "Items Ordered:";
+                        card.appendChild(itemsHeader);
+                        card.appendChild(itemsContainer);
+                    }
+
+                    ordersListDiv.appendChild(card);
+                });
+            });
+        }
+
+        // --- 5. Firebase Listeners ---
+        function addNewCategory() {
+            const input = document.getElementById('newCategory');
+            const category = input.value.trim();
+            
+            if (!category) {
+                showCustomAlert('Please enter a category name');
+                return;
+            }
+
+            if (state.categories.includes(category)) {
+                showCustomAlert('This category already exists');
+                return;
+            }
+
+            database.ref('categories').transaction((current) => {
+                if (current) {
+                    if (!current.includes(category)) {
+                        current.push(category);
+                    }
+                    return current;
+                }
+                return [category];
+            });
+
+            input.value = '';
+        }
+
+        function deleteCategory(category) {
+            if (category === 'All') return;
+
+            showConfirmDialog(`Delete category "${category}"?`, () => {
+                // Remove category from items that use it
+                Object.entries(state.stock).forEach(([item, data]) => {
+                    if (data.category === category) {
+                        database.ref(`stock/${item}/category`).remove();
+                    }
+                });
+
+                // Remove from categories list
+                database.ref('categories').transaction((current) => {
+                    if (current) {
+                        return current.filter(cat => cat !== category);
+                    }
+                    return current;
+                });
+            });
+        }
+
+        function setupFirebaseListeners() {
+            // Listen for categories changes
+            database.ref('categories').on('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    state.categories = snapshot.val();
+                    if (!state.categories.includes('All')) {
+                        state.categories.unshift('All');
+                    }
+                    renderCategories();
+                    renderControlPanel();
+                }
+            });
+
+            // Listen for stock changes
+            database.ref('stock').on('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    state.stock = snapshot.val();
+
+                    // Initialize localStock with same values if empty
+                    if (Object.keys(state.localStock).length === 0) {
+                        state.localStock = { ...state.stock };
+                    } else {
+                        // Update localStock values for any new items
+                        for (const [item, itemData] of Object.entries(state.stock)) {
+                            if (state.localStock[item] === undefined) {
+                                state.localStock[item] = { ...itemData };
+                            }
+                        }
+
+                        // Remove items from localStock that are no longer in the global stock
+                        for (const item in state.localStock) {
+                            if (!state.stock[item]) {
+                                delete state.localStock[item];
+                            }
+                        }
+                    }
+
+                    renderProducts();
+                    renderControlPanel();
+                }
+            });
+
+            // Listen for orders changes
+            database.ref('orders').on('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    // Convert from Firebase object to array
+                    const ordersObj = snapshot.val();
+                    state.orders = Object.keys(ordersObj).map(key => ({
+                        ...ordersObj[key],
+                        firebaseKey: key,
+                        done: ordersObj[key].done || false // Ensure 'done' property exists
+                    }));
+                } else {
+                    state.orders = [];
+                }
+                renderControlPanel();
+            });
+        }
+
+        // --- 6. State-mutators ---
+        // Custom alert dialog
+        function showCustomAlert(message) {
+            const alertModal = document.createElement('div');
+            alertModal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            alertModal.innerHTML = `
+                <div class="bg-white rounded-lg shadow-xl p-6 w-80 space-y-4">
+                    <h3 class="text-xl font-bold text-center">Notice</h3>
+                    <p class="text-center">${message}</p>
+                    <button class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded">OK</button>
+                </div>
+            `;
+            document.body.appendChild(alertModal);
+
+            alertModal.querySelector('button').onclick = () => {
+                document.body.removeChild(alertModal);
+            };
+        }
+
+        function addToCart(item) {
+            // Check if the item is in stock locally before adding to cart
+            if (state.localStock[item]?.quantity > 0) {
+                state.cart[item] = (state.cart[item] || 0) + 1;
+                // Decrease local stock
+                state.localStock[item].quantity--;
+                renderCart();
+                renderProducts();
+            } else {
+                showCustomAlert('Sorry, this item is out of stock!');
+            }
+        }
+
+        function removeFromCart(item) {
+            if (state.cart[item]) {
+                state.cart[item]--;
+                // Increase local stock
+                if (!state.localStock[item]) {
+                  state.localStock[item] ={ quantity: 0, price: state.stock[item]?.price || 1.00 };
+                }
+                state.localStock[item].quantity++;
+
+                if (state.cart[item] === 0) delete state.cart[item];
+                renderCart();
+                renderProducts();
+            }
+        }
+
+        function showConfirmDialog(message, onConfirm, onCancel) {
+            const confirmModal = document.createElement('div');
+            confirmModal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            confirmModal.innerHTML = `
+                <div class="bg-white rounded-lg shadow-xl p-6 w-80 space-y-4">
+                    <h3 class="text-xl font-bold text-center">Confirm</h3>
+                    <p class="text-center">${message}</p>
+                    <div class="flex gap-3">
+                        <button id="cancelBtn" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 rounded">Cancel</button>
+                        <button id="confirmBtn" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded">Confirm</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(confirmModal);
+
+            confirmModal.querySelector('#confirmBtn').onclick = () => {
+                document.body.removeChild(confirmModal);
+                if (onConfirm) onConfirm();
+            };
+
+            confirmModal.querySelector('#cancelBtn').onclick = () => {
+                document.body.removeChild(confirmModal);
+                if (onCancel) onCancel();
+            };
+        }
+
+        function checkout() {
+            const name = custNameInput.value.trim();
+            if (!name) {
+                showCustomAlert("Please enter your name to complete the order.");
+                return;
+            }
+
+            const meetLocation = meetLocInput.value;
+            const meetTime = meetTimeInput.value;
+
+            // Calculate total price based on individual item prices
+            let subtotal = 0;
+            Object.entries(state.cart).forEach(([item, qty]) => {
+                const price = state.stock[item]?.price || 1.00;
+                subtotal += price * qty;
+            });
+
+            const deliveryFee = Object.keys(state.cart).length > 0 ? 0.25 : 0;
+            const totalPrice = subtotal + deliveryFee;
+
+            // Create order with price included
+            const order = {
+                name,
+                meetLocation,
+                meetTime,
+                subtotal: subtotal.toFixed(2),
+                deliveryFee: deliveryFee.toFixed(2),
+                total: totalPrice.toFixed(2),
+                done: false, // Add done status here
+                ...state.cart
+            };
+
+            // Verify all items in cart are still available in local stock
+            let allItemsAvailable = true;
+            let unavailableItems = [];
+
+            Object.entries(state.cart).forEach(([item, qty]) => {
+                if ((state.localStock[item]?.quantity || 0) < 0) {
+                    allItemsAvailable = false;
+                    unavailableItems.push(item);
+                }
+            });
+
+            if (!allItemsAvailable) {
+                showCustomAlert(`Sorry, these items are no longer available in the requested quantity: ${unavailableItems.join(', ')}`);
+                return;
+            }
+
+            // Confirm checkout
+            showConfirmDialog("Place your order?", () => {
+                // Decrease stock globally for all items in cart
+                Object.entries(state.cart).forEach(([item, qty]) => {
+                    database.ref(`stock/${item}/quantity`).transaction((currentStock) => {
+                        return Math.max((currentStock || 0) - qty, 0);
+                    });
+                });
+
+                // Add to Firebase orders
+                database.ref('orders').push(order);
+
+                // Reset cart and local stock to match global stock
+                state.cart = {};
+                state.localStock = JSON.parse(JSON.stringify(state.stock)); // Deep copy
+                custNameInput.value = meetLocInput.value = meetTimeInput.value = "";
+                renderCart();
+                renderProducts();
+
+                showCustomAlert("Your order has been placed!");
+            });
+        }
+
+        function deleteOrder(idx) {
+            const order = state.orders[idx];
+            if (!order || !order.firebaseKey) return;
+
+            // Return items to stock
+            Object.entries(order).forEach(([k, v]) => {
+                if (!["name", "meetLocation", "meetTime", "firebaseKey", "index", "subtotal", "deliveryFee", "total", "done"].includes(k)) {
+                    database.ref(`stock/${k}/quantity`).transaction((currentStock) => {
+                        return (currentStock || 0) + v;
+                    });
+                }
+            });
+
+            // Remove order from Firebase
+            database.ref(`orders/${order.firebaseKey}`).remove();
+            showCustomAlert("Order has been deleted");
+        }
+
+        function removeItemFromOrder(orderIndex, item) {
+            const order = state.orders[orderIndex];
+            if (!order || !order.firebaseKey) return;
+
+            const qty = order[item] || 0;
+
+            // Return item to stock
+            database.ref(`stock/${item}/quantity`).transaction((currentStock) => {
+                return (currentStock || 0) + qty;
+            });
+
+            // Remove item from order
+            database.ref(`orders/${order.firebaseKey}/${item}`).remove();
+            showCustomAlert(`${item} has been removed from the order`);
+        }
+
+        function resetEverything() {
+            showConfirmDialog("Are you sure you want to reset everything? This will affect all users!", () => {
+                database.ref('stock').set({ ...initialStock });
+                database.ref('orders').remove();
+                state.cart = {};
+                state.localStock = JSON.parse(JSON.stringify(initialStock)); // Deep copy
+                renderCart();
+                renderProducts();
+                showCustomAlert("Everything has been reset");
+            });
+        }
+
+        function addNewItem() {
+            const nm = newNameInput.value.trim();
+            const q = parseInt(newQtyInput.value) || 0;
+            const p = parseFloat(newPriceInput.value) || 1.00;
+
+            if (!nm) {
+                showCustomAlert("Please enter an item name");
+                return;
+            }
+
+            database.ref(`stock/${nm}`).set({
+                quantity: q,
+                price: Math.max(0.01, p)
+            });
+
+            newNameInput.value = "";
+            newQtyInput.value = "";
+            newPriceInput.value = "";
+            showCustomAlert(`"${nm}" has been added to inventory`);
+        }
+
+        // Mark order as done
+        function markOrderDone(orderIndex) {
+            const order = state.orders[orderIndex];
+            if (!order || !order.firebaseKey) return;
+            database.ref(`orders/${order.firebaseKey}/done`).set(true);
+            showCustomAlert("Order marked as done.");
+            renderControlPanel(); // Re-render to update the display
+        }
+
+        function markOrderUndone(orderIndex) {
+            const order = state.orders[orderIndex];
+            if (!order || !order.firebaseKey) return;
+            database.ref(`orders/${order.firebaseKey}/done`).set(false);
+            showCustomAlert("Order marked as not done.");
+            renderControlPanel();
+        }
+
+        // Password modal functions
+        function showPasswordModal() {
+            passwordModal.classList.remove("hidden");
+            passwordInput.focus();
+        }
+
+        function hidePasswordModal() {
+            passwordModal.classList.add("hidden");
+            passwordInput.value = "";
+        }
+
+        function checkPassword() {
+            const password = passwordInput.value;
+            if (password === "mikesigma") {
+                hidePasswordModal();
+                controlPanel.classList.remove("hidden");
+            } else {
+                alert("Incorrect password");
+                passwordInput.value = "";
+                passwordInput.focus();
+            }
+        }
+
+        // --- 7. Event wiring & Initial render ---
+        checkoutBtn.onclick = checkout;
+        resetBtn.onclick = resetEverything;
+        addNewItemBtn.onclick = addNewItem;
+        submitPasswordBtn.onclick = checkPassword;
+        cancelPasswordBtn.onclick = hidePasswordModal;
+
+        // Order status filter
+        orderStatusFilterDiv.addEventListener('click', (event) => {
+            if (event.target.classList.contains('order-status-tab')) {
+                // Remove active class from all tabs
+                document.querySelectorAll('.order-status-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                // Add active class to the clicked tab
+                event.target.classList.add('active');
+                state.orderStatusFilter = event.target.dataset.status;
+                renderControlPanel(); // Re-render to apply the filter
+            }
+        });
+
+        // Enter key in password field
+        passwordInput.addEventListener("keydown", e => {
+            if (e.key === "Enter") {
+                checkPassword();
+            }
+        });
+
+        // Ctrl+H to show password modal
+        window.addEventListener("keydown", e => {
+            if (e.ctrlKey && e.key.toLowerCase() === "h") {
+                e.preventDefault();
+                showPasswordModal();
+            }
+        });
+
+        // Initialize and setup
+        initializeFirebase();
+        setupFirebaseListeners();
+        renderCart(); // Initial cart render (empty)
+    </script>
 </body>
 </html>
-
